@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Профиль пользователя{% endblock %}
+{% load static %}
+{% block content %}
+<div class="profile-container">
+    <h1>Профиль пользователя: {{ username }}</h1>
+
+    <div class="profile-section">
+        <h2>Основная информация</h2>
+        <p><strong>Имя пользователя:</strong> {{ username }}</p>
+        <p><strong>Количество рецензий:</strong> {{ reviews_count }}</p>
+        <p><strong>Количество любимых исполнителей:</strong> {{ favorite_artists_count }}</p>
+        <p><strong>Количество любимых песен:</strong> {{ favorite_songs_count }}</p>
+    </div>
+
+    <hr>
+
+    <div class="profile-section">
+        <h2>Любимые исполнители</h2>
+        {% if favorite_artists %}
+            <div class="artists-list">
+            {% for artist in favorite_artists %}
+                <div class="artist-item">
+                    <strong>{{ artist.name }}</strong>
+                    {% if artist.genre %} ({{ artist.genre }}){% endif %}
+
+                    {% if artist.favorite_songs %}
+                        <div class="songs-list">
+                            {% for song in artist.favorite_songs %}
+                                <div class="song-item">
+                                    {{ song.title }}
+                                    {% if song.album %} - альбом "{{ song.album }}"{% endif %}
+                                    {% if song.year %} ({{ song.year }}){% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="no-items">Нет добавленных песен</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-items">У пользователя нет любимых исполнителей</p>
+        {% endif %}
+    </div>
+
+    <hr>
+
+    <div class="profile-section">
+        <h2>Рецензии ({{ reviews|length }})</h2>
+        {% if reviews %}
+            <div class="reviews-list">
+            {% for review in reviews %}
+                <div class="review-item">
+                    <h3>Рецензия #{{ forloop.counter }}</h3>
+                    <p><strong>Тип:</strong>
+                        {% if review.type == 'album' %}💿 Альбом
+                        {% elif review.type == 'song' %}🎵 Песня
+                        {% endif %}
+                    </p>
+                    <p><strong>Название:</strong> {{ review.title }}</p>
+                    <p><strong>Исполнитель:</strong> {{ review.artist }}</p>
+                    {% if review.album %}
+                        <p><strong>Альбом:</strong> {{ review.album }}</p>
+                    {% endif %}
+                    <p><strong>Оценка:</strong> {{ review.rating }}/10</p>
+                    <p><strong>Рецензия:</strong> {{ review.text }}</p>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-items">У пользователя нет рецензий</p>
+        {% endif %}
+    </div>
+
+    <hr>
+
+    <div class="profile-section">
+        <h2>Сообщества ({{ communities|length }})</h2>
+        {% if communities %}
+            <div class="communities-list">
+            {% for community in communities %}
+                <div class="community-item">
+                    <strong>{{ community.name }}</strong>
+                    {% if community.description %} - {{ community.description }}{% endif %}
+                    <br>
+                    <small>Участников: {{ community.members_count }}</small>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-items">Пользователь не состоит в сообществах</p>
+        {% endif %}
+    </div>
+</div>
+ <link rel="stylesheet" type="text/css" href="{% static 'userprofile/css/profile_styles.css' %}">
+
+{% endblock %}

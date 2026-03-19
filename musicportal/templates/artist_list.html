@@ -1,0 +1,20 @@
+{% load static %}
+<ul class="artist-list">
+    {% for artist in artists %}
+    <li class="artist-item">
+        <img src="{% static 'artists/images/' %}{{ artist.title|cut:' ' }}.jpg"
+             alt="{{ artist.title }}"
+             class="artist-thumb">
+        <div class="artist-info">
+            <h2>{{ artist.title }}</h2>
+            <p><strong>Жанр:</strong> {{ artist.genre }}</p>
+            <p>{{ artist.content }}</p>
+            <span>Подробнее →</span>
+        </div>
+    </li>
+    {% empty %}
+    <li>Нет доступных исполнителей</li>
+    {% endfor %}
+</ul>
+
+<link rel="stylesheet" type="text/css" href="{% static 'artists/css/artists_style.css' %}">

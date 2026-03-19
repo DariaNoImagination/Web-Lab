@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Каталог музыки{% endblock %}
+
+{% block content %}
+<div class="music-container">
+    <h1>Каталог музыки</h1>
+
+    <h2 class="section-title">Песни</h2>
+    <div class="music-list">
+        {% for s in songs %}
+        <div class="music-card">
+            <div class="music-header">
+                <span class="music-category">🎵 Песня</span>
+            </div>
+
+            <h3 class="music-title">{{ s.title }}</h3>
+
+            <p class="music-artist"><strong>Исполнитель:</strong> {{ s.artist }}</p>
+            <p><strong>Альбом:</strong> {{ s.album }}</p>
+            <p><strong>Год выпуска:</strong> {{ s.year }}</p>
+            <p><strong>Жанр:</strong> {{ s.genre }}</p>
+
+            <div class="music-footer">
+                <span class="listen-link">Слушать →</span>
+            </div>
+        </div>
+        {% if not forloop.last %}
+        <hr>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <h2 class="section-title">Альбомы</h2>
+    <div class="music-list">
+        {% for al in albums %}
+        <div class="music-card">
+            <div class="music-header">
+                <span class="music-category">💿 Альбом</span>
+            </div>
+
+            <h3 class="music-title">{{ al.title }}</h3>
+
+            <p class="music-artist"><strong>Исполнитель:</strong> {{ al.artist }}</p>
+            <p><strong>Год выпуска:</strong> {{ al.year }}</p>
+            <p><strong>Жанр:</strong> {{ al.genre }}</p>
+            <p><strong>Количество песен:</strong> {{ al.songs_count }}</p>
+
+            <div class="music-footer">
+                <span class="listen-link">Слушать →</span>
+            </div>
+        </div>
+        {% if not forloop.last %}
+        <hr>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<link rel="stylesheet" type="text/css" href="{% static 'music/css/music_style.css' %}">
+{% endblock %}

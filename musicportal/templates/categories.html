@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+<ul>
+    {% for c in categories %}
+    <li>
+        <h2>
+            {% if app_name == 'artists' %}
+                <a href="{% url 'genre_artist' genre_slug=c.slug|lower %}">
+                    {{ c.title }}
+                </a>
+            {% elif app_name == 'reviews' %}
+                <a href="{% url 'genre_reviews' genre_slug=c.slug|lower %}">
+                    {{ c.title }}
+                </a>
+            {% else %}
+             {{ c.title }}
+            {% endif %}
+        </h2>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

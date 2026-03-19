@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<p>
+
+    <a href="{% url 'all_news' %}"> Все новости</a> |
+    <a href="{% url 'category' 'events' %}">Концерты</a> |
+    <a href="{% url 'category' 'awards' %}">Премии</a> |
+    <a href="{% url 'category' 'new' %}">Новинки</a>
+    </p>
+    <h1>{{ title }}</h1>
+
+    {% if news %}
+        <div class="news-list">
+            {% for item in news %}
+            <div class="news-card">
+                <div class="news-header">
+                    <span class="news-category">
+                        {% if item.category == 'events' %}🎤 Концерты
+                        {% elif item.category == 'awards' %}🏆 Премии
+                        {% elif item.category == 'new' %}🔥 Новинки
+                        {% endif %}
+                    </span>
+                </div>
+
+                <h2 class="news-title">{{ item.title }}</h2>
+
+                <p class="news-content">{{ item.content }}</p>
+                    <span>Подробнее →</span>
+
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Нет новостей в этой категории</p>
+    {% endif %}
+<link rel="stylesheet" type="text/css" href="{% static 'musicnews/css/news_style.css' %}">
+{% endblock %}

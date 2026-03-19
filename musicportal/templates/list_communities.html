@@ -1,0 +1,35 @@
+{% load static %}
+{% if communities %}
+    <div class="communities-list">
+        {% for community in communities %}
+        <div class="community-card">
+            <div class="community-header">
+                <span class="community-category">👥 Фан-клуб</span>
+            </div>
+
+            <h3 class="community-title">{{ community.club_name }}</h3>
+
+            <p class="community-artist"><strong>Исполнитель:</strong> {{ community.artist_name }}</p>
+
+            {% if community.description %}
+            <p class="community-description">{{ community.description }}</p>
+            {% endif %}
+
+            <p><strong>📅 Основано:</strong> {{ community.founded }}</p>
+
+            <p><strong>👥 Участников:</strong> {{ community.members }}</p>
+
+            <div class="community-footer">
+                <span class="join-link">Вступить →</span>
+            </div>
+        </div>
+        {% if not forloop.last %}
+        <hr>
+        {% endif %}
+        {% endfor %}
+    </div>
+{% else %}
+    <p>Нет доступных сообществ</p>
+{% endif %}
+<link rel="stylesheet" type="text/css" href="{% static 'communities/css/fanclub.css' %}">
+

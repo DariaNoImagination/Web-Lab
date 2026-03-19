@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Музыкальный портал{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'homepage/css/styles.css' %}">
+    <link rel="shortcut icon" href="{% static 'homepage/images/note.png' %}" type="image/x-icon">
+</head>
+<body>
+    <div class="header">
+        <ul class="mainmenu">
+            <li class="logo"><a href="{% url 'main' %}"><div class="logo"></div></a></li>
+            <li><a href="{% url 'main' %}">Главная</a></li>
+            <li><a href="{% url 'all_artists' %}">Исполнители</a></li>
+            <li><a href="{% url 'all_news' %}">Новости</a></li>
+            <li><a href="{% url 'all_communities' %}">Сообщества</a></li>
+            <li><a href="{% url 'all_music' %}">Каталог музыки</a></li>
+            <li><a href="{% url 'all_reviews' %}">Рецензии</a></li>
+            <li class="last"><a href="{% url 'profile' username='username' %}">Профиль</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<style>
+    .reviews-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-width: 2000px;
+        margin: 0 auto;
+    }
+
+    .review-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 10px;
+    }
+
+    .review-category {
+        font-size: 0.9em;
+        color: #48D1CC;
+        font-weight: bold;
+    }
+
+    .review-title {
+        color: #00688B;
+        margin: 10px 0;
+        font-size: 1.3em;
+    }
+
+    .review-artist {
+        color: #48D1CC;
+        margin: 5px 0;
+    }
+
+    .review-card p {
+        color: #555;
+        margin: 5px 0;
+        line-height: 1.4;
+    }
+
+    .review-rating {
+        font-weight: bold;
+        color: #FF6B6B;
+    }
+
+    .review-footer {
+        text-align: right;
+        margin-top: 15px;
+    }
+
+    .read-link {
+        color: #48D1CC;
+        cursor: pointer;
+        font-size: 0.95em;
+    }
+
+    .read-link:hover {
+        color: #00688B;
+        text-decoration: underline;
+    }
+
+    hr {
+        border: 0;
+        height: 1px;
+        background: linear-gradient(to right, transparent, #48D1CC, transparent);
+        margin: 10px 0;
+    }
+</style>

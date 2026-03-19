@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load music_tags %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+
+{% block content %}
+
+<h1>{{ title }}</h1>
+
+{% if request.path|slice:':9' == '/artists/' %}
+    <a href="{% url 'all_artists' %}">Все исполнители</a> |
+    <a href="{% url 'genres_for_artists' %}">Исполнители по жанрам</a>
+{% endif %}
+
+{% if 'исполнители' in title|lower%}
+    {% include 'artist_list.html' with artists=posts %}
+
+{% elif 'рецензии' in title|lower %}
+        <a href="{% url 'all_reviews' %}">Все рецензии</a> |
+        <a href="{% url 'genres_for_reviews' %}">Рецензии по жанрам</a>
+    {% include 'review_template.html' with reviews=posts %}
+
+{% elif 'Сообщества' in title %}
+    <h2>Фан-сообщества</h2>
+    {% show_categories %}
+
+{% else %}
+    <ul>
+        {% for p in posts %}
+        <li>
+            <h2>{{ p.title }}</h2>
+            <p>{{ p.content }}</p>
+            <hr>
+        </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% endblock %}

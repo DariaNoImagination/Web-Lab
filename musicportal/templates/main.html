@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Главная страница - Музыкальный портал{% endblock %}
+
+{% block content %}
+
+    <h1 style="text-align: center;">Музыкальный портал</h1>
+    <h2 style="text-align: center;">Рецензии, новости, новинки мира музыки</h2>
+    <div class="main-image">
+        <img src="{% static 'homepage/images/main.png' %}"
+             alt="Музыкальный портал">
+    </div>
+
+    <style>
+        .main-image {
+            width: 100%;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .hero-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+{% endblock %}
