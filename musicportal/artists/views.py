@@ -1,39 +1,32 @@
-from django.shortcuts import render, redirect
-from data import genres_data,all_artist_data
+from django.shortcuts import render, get_object_or_404
+from artists.models import Artist,Genre
 def index(request):
     data = {
         'title': 'Музыкальные исполнители',
-        'posts': all_artist_data,
+        'posts': Artist.objects.all(),
     }
     return render(request, 'information.html',
                   context=data)
 
 
-def categories(request): #Жанры
+def categories(request):  # Жанры
+    genres = Genre.objects.all()
     data = {
         'title': 'Жанры',
-        'categories': genres_data,
+        'categories': genres,
         'app_name': 'artists'
     }
-    return render(request, 'categories.html',
-                  context=data)
+    return render(request, 'categories.html', context=data)
 
 
 def artists_by_genre(request, genre_slug):
-    genre_names = {
-        'pop': 'поп',
-        'rock': 'рок',
-        'rnb': 'R&B',
-    }
-    if genre_slug not in genre_names:
-        return redirect('all_artists')
+    genre = get_object_or_404(Genre, slug=genre_slug)
+    artists = Artist.objects.filter(genre=genre_slug)
 
-    filtered_artists = [artist for artist in all_artist_data if artist['genre'] == genre_slug]
-
-    genre_name = genre_names[genre_slug]
     data = {
-        'title': f'Исполнители жанра {genre_name}',
-        'posts': filtered_artists,
+        'title': f'Исполнители жанра {genre.title}',
+        'posts': artists,
+        'app_name': 'artists'
     }
     return render(request, 'information.html', context=data)
 

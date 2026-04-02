@@ -1,39 +1,34 @@
-from django.shortcuts import render, redirect
-from data import reviews_data,genres_data
+from reviews.models import Review
+from artists.models import Genre
+from django.shortcuts import render, get_object_or_404
 def index(request):
+    reviews = Review.published.all().order_by('-rating')
     data = {
         'title': 'Рецензии',
-        'posts': reviews_data
+        'posts': reviews
     }
     return render(request, 'information.html',
                   context=data)
 
 def categories(request): #Жанры
+    genres = Genre.objects.all()
     data = {
         'title': 'Рецензии по жанрам',
-        'categories': genres_data,
+        'categories': genres,
         'app_name': 'reviews'
     }
     return render(request, 'categories.html',
                   context=data)
 
 def reviews_by_genre(request, genre_slug):
-    genre_names = {
-        'pop': 'поп',
-        'rock': 'рок',
-        'rnb': 'R&B',
-    }
-    if genre_slug not in genre_names:
-        return redirect('all_reviews')
-
-    filtered_reviews = [review for review in reviews_data if review['genre'] == genre_slug]
-
-
-    genre_name = genre_names[genre_slug]
+    genre = get_object_or_404(Genre, slug=genre_slug)
+    reviews = Review.published.filter(
+        genre=genre_slug,
+    ).order_by('-rating')
 
     data = {
-        'title': f'Рецензии жанра {genre_name}',
-        'posts': filtered_reviews,
+        'title': f'Рецензии жанра {genre.title}',
+        'posts': reviews,
     }
 
     return render(request, 'information.html', context=data)

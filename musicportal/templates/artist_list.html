@@ -7,7 +7,18 @@
              class="artist-thumb">
         <div class="artist-info">
             <h2>{{ artist.title }}</h2>
-            <p><strong>Жанр:</strong> {{ artist.genre }}</p>
+            <p><strong>Жанр:</strong>
+            {% if artist.genre == 'pop' %}
+                Поп
+            {% elif artist.genre == 'rock' %}
+                Рок
+            {% elif artist.genre == 'rnb' or artist.genre == 'r&b' %}
+                R&B
+            {% else %}
+                {{ artist.genre }}
+            {% endif %}
+            </p>
+            <p><strong>Годы активности:</strong> {{ artist.active_years  }}</p>
             <p>{{ artist.content }}</p>
             <span>Подробнее →</span>
         </div>

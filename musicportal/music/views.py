@@ -1,9 +1,11 @@
 from django.shortcuts import render
-from data import songs_data,albums_data
+from music.models import Song,Album
 def about_music(request):
+    songs = Song.objects.all()
+    albums = Album.objects.all()
     data = {
-        'songs': songs_data,
-        'albums': albums_data,
+        'songs': songs,
+        'albums': albums,
     }
     return render(request, 'music.html',
                   context=data)

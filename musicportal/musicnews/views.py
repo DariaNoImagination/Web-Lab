@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from data import news_data
+from musicnews.models import News
 
 category_names = {
         'events': 'Концерты и события',
@@ -8,9 +8,10 @@ category_names = {
     }
 
 def index(request):
+    news = News.objects.all()
     data = {
         'title': 'Все новости музыки',
-        'news': news_data,
+        'news': news,
         'show_all': True,
     }
     return render(request, 'news.html', context=data)
@@ -25,8 +26,8 @@ def categories(request):
 
 
 def news_by_category(request, category_slug):
-    # Фильтруем новости по категории
-    filtered_news = [news for news in news_data if news['category'] == category_slug]
+    news = News.objects.all()
+    filtered_news = [news for news in news if news.category == category_slug]
 
     category_name = category_names.get(category_slug, category_slug)
 
