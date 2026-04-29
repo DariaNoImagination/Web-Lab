@@ -43,9 +43,18 @@
     }
 
     .news-content {
-        color: #555;
+        color: #333;
         line-height: 1.5;
         margin: 15px 0;
+        font-weight: 500
+
+    }
+
+    .news-date {
+        color: #999;
+        line-height: 1;
+        margin: 15px 0;
+        font-weight: 300
     }
 
     .news-footer {

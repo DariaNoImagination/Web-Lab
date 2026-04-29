@@ -1,86 +1,465 @@
-<style>
-    .music-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-    }
+.music-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 30px;
+}
 
-    h1 {
-        color: #00688B;
-        text-align: center;
-        margin-bottom: 30px;
-    }
+h1 {
+    color: #00688B;
+    text-align: center;
+    margin-bottom: 30px;
+}
 
-    .section-title {
-        color: #48D1CC;
-        margin: 30px 0 20px;
-        padding-bottom: 5px;
-        border-bottom: 2px solid #48D1CC;
-    }
+.section-title {
+    color: #48D1CC;
+    margin: 30px 0 20px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #48D1CC;
+}
 
-    .music-list {
-        display: flex;
+.music-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.music-card {
+    background: white;
+
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.music-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.music-category {
+    font-size: 0.9em;
+    color: #48D1CC;
+    font-weight: bold;
+}
+
+.music-title {
+    color: #00688B;
+    margin: 10px 0;
+    font-size: 1.3em;
+}
+
+.music-artist {
+    color: #48D1CC;
+    margin: 5px 0;
+}
+
+.music-card p {
+    color: #555;
+    margin: 5px 0;
+    line-height: 1.4;
+}
+
+.music-footer {
+    text-align: right;
+    margin-top: 15px;
+}
+
+.listen-link {
+    color: #48D1CC;
+    cursor: pointer;
+    font-size: 0.95em;
+}
+
+.listen-link:hover {
+    color: #00688B;
+    text-decoration: underline;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #48D1CC, transparent);
+    margin: 10px 0;
+}
+
+/* Filters Header */
+.filters-header {
+    max-width: 800px;
+    margin: 0 auto 20px auto;
+}
+
+.filter-links {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.filter-links a {
+    background: white;
+    color: #00688B;
+    text-decoration: none;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #48D1CC;
+}
+
+.filter-links a:hover {
+    background: #48D1CC;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,206,209,0.3);
+}
+
+/* Music Filter (новый) */
+.music-filter {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+    margin-bottom: 20px;
+}
+
+.music-filter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,206,209,0.2);
+}
+
+.filter-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    color: #00688B;
+    font-weight: 600;
+    font-size: 13px;
+    margin-left: 10px;
+}
+
+/* Year Filter */
+.year-filter {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+    margin-bottom: 20px;
+}
+
+.year-filter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,206,209,0.2);
+}
+
+.year-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.year-form > label {
+    color: #00688B;
+    font-weight: 600;
+    font-size: 15px;
+    margin-right: 5px;
+}
+
+/* Стилизованный select */
+.styled-select {
+    position: relative;
+    display: inline-block;
+}
+
+.styled-select select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: #f8f9fa;
+    border: 1px solid #48D1CC;
+    padding: 8px 30px 8px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 110px;
+}
+
+.styled-select select:hover {
+    border-color: #00688B;
+    background: white;
+    transform: scale(1.02);
+}
+
+.styled-select select:focus {
+    outline: none;
+    border-color: #00688B;
+    box-shadow: 0 0 0 2px rgba(0,206,209,0.2);
+}
+
+/* Кастомная стрелка */
+.styled-select::after {
+    content: "▼";
+    font-size: 10px;
+    color: #48D1CC;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    transition: all 0.2s;
+}
+
+.styled-select:hover::after {
+    color: #00688B;
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Разделитель */
+.separator {
+    font-size: 18px;
+    font-weight: bold;
+    color: #48D1CC;
+}
+
+/* Чекбокс */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #555;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 5px 10px;
+    background: #f8f9fa;
+    border-radius: 20px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.checkbox-label:hover {
+    background: white;
+    border-color: #48D1CC;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #48D1CC;
+}
+
+.checkbox-label span {
+    user-select: none;
+}
+
+/* Кнопка отправки */
+.filter-submit {
+    background: #48D1CC;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.filter-submit:hover {
+    background: #00688B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,104,139,0.3);
+}
+
+.filter-submit:active {
+    transform: translateY(0);
+}
+
+/* Кнопка сброса */
+.reset-link {
+    background: #f8f9fa;
+    color: #666;
+    text-decoration: none;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 20px;
+    transition: all 0.2s;
+    border: 1px solid #ddd;
+}
+
+.reset-link:hover {
+    background: #e9ecef;
+    color: #333;
+    transform: translateY(-2px);
+}
+
+/* Group Section (для группировки) */
+.group-section {
+    max-width: 2000px;
+    margin: 0 auto 30px auto;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.group-section h2 {
+    color: #00688B;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #48D1CC;
+    font-size: 1.3em;
+}
+
+.group-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.group-item {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 10px 15px;
+    background: white;
+    border-radius: 8px;
+    transition: all 0.2s;
+    border-left: 4px solid #48D1CC;
+}
+
+.group-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.group-title {
+    font-weight: bold;
+    color: #00688B;
+    font-size: 1.1em;
+}
+
+.group-year {
+    color: #888;
+    font-size: 0.9em;
+}
+
+.group-count {
+    color: #48D1CC;
+    font-size: 0.9em;
+    margin-left: auto;
+}
+
+/* No results */
+.no-results {
+    text-align: center;
+    padding: 50px;
+    color: #888;
+    font-size: 1.1em;
+}
+
+/* Songs and Albums sections */
+.songs-section, .albums-section {
+    margin-bottom: 40px;
+}
+
+.songs-section h2, .albums-section h2 {
+    color: #00688B;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #48D1CC;
+}
+
+/* Music results */
+.music-results {
+    max-width: 2000px;
+    margin: 0 auto;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .filter-form {
         flex-direction: column;
-        gap: 20px;
+        gap: 15px;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    .filter-group label {
+        margin-left: 0;
+    }
+    
+    .styled-select select {
+        min-width: 100%;
+        width: 100%;
+    }
+    
+    .year-form {
+        flex-direction: column;
+        gap: 10px;
     }
 
-    .music-card {
-        background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    .styled-select select {
+        min-width: 180px;
     }
 
-    .music-header {
-        display: flex;
-        justify-content: flex-end;
-        margin-bottom: 10px;
+    .separator {
+        transform: rotate(90deg);
     }
 
-    .music-category {
-        font-size: 0.9em;
-        color: #48D1CC;
-        font-weight: bold;
+    .checkbox-label {
+        width: 100%;
+        justify-content: center;
     }
 
-    .music-title {
-        color: #00688B;
-        margin: 10px 0;
-        font-size: 1.3em;
+    .filter-submit, .reset-link {
+        width: 100%;
+        justify-content: center;
     }
 
-    .music-artist {
-        color: #48D1CC;
-        margin: 5px 0;
+    .filter-links {
+        flex-direction: column;
+        align-items: center;
     }
 
-    .music-card p {
-        color: #555;
-        margin: 5px 0;
-        line-height: 1.4;
+    .filter-links a {
+        width: 100%;
+        text-align: center;
     }
-
-    .music-footer {
-        text-align: right;
-        margin-top: 15px;
+    
+    .group-item {
+        flex-wrap: wrap;
     }
-
-    .listen-link {
-        color: #48D1CC;
-        cursor: pointer;
-        font-size: 0.95em;
+    
+    .group-count {
+        margin-left: 0;
+        width: 100%;
     }
-
-    .listen-link:hover {
-        color: #00688B;
-        text-decoration: underline;
-    }
-
-    hr {
-        border: 0;
-        height: 1px;
-        background: linear-gradient(to right, transparent, #48D1CC, transparent);
-        margin: 10px 0;
-    }
-</style>
+}

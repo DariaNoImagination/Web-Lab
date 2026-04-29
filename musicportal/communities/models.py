@@ -1,7 +1,7 @@
 from django.db import models
-
+from artists.models import Artist
 class Community(models.Model):
-    artist = models.CharField(max_length=255,verbose_name="Исполнитель")
+    artist= models.OneToOneField(Artist,on_delete=models.SET_NULL, null=True, blank=True)
     club_name = models.CharField(max_length=255, verbose_name="Название фан-клуба")
     founded = models.CharField(max_length=255, verbose_name="Дата основания")
     members = models.IntegerField(verbose_name="Количество участников")

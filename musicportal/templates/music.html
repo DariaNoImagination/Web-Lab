@@ -4,58 +4,183 @@
 {% block title %}Каталог музыки{% endblock %}
 
 {% block content %}
-<div class="music-container">
-    <h1>Каталог музыки</h1>
-
-    <h2 class="section-title">Песни</h2>
-    <div class="music-list">
-        {% for s in songs %}
-        <div class="music-card">
-            <div class="music-header">
-                <span class="music-category">🎵 Песня</span>
+<div class="filters-header">
+    <div class="music-filter">
+        <form method="get" action="{% url 'filter_music' %}" class="filter-form">
+            <!-- Выбор жанра -->
+            <div class="filter-group">
+                <label>Жанр:</label>
+                <div class="styled-select">
+                    <select name="genre">
+                        <option value="">Все жанры</option>
+                        {% for genre in genres %}
+                            <option value="{{ genre.slug }}" {% if selected_genre == genre.slug %}selected{% endif %}>
+                                {{ genre.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
 
-            <h3 class="music-title">{{ s.title }}</h3>
+            <!-- Выбор типа контента -->
+            <div class="filter-group">
+                <label>Тип:</label>
+                <div class="styled-select">
+                    <select name="content_type">
+                        <option value="">Все (песни и альбомы)</option>
+                        <option value="song" {% if selected_type == 'song' %}selected{% endif %}>🎵 Песни</option>
+                        <option value="album" {% if selected_type == 'album' %}selected{% endif %}>💿 Альбомы</option>
+                    </select>
+                </div>
+            </div>
 
-            <p class="music-artist"><strong>Исполнитель:</strong> {{ s.artist }}</p>
-            <p><strong>Альбом:</strong> {{ s.album }}</p>
-            <p><strong>Год выпуска:</strong> {{ s.year }}</p>
-            <p><strong>Жанр:</strong> {{ s.genre }}</p>
+            <!-- Выбор года -->
+            <div class="filter-group">
+                <label>Год выпуска:</label>
+                <div class="styled-select">
+                    <select name="year">
+                        <option value="">Все годы</option>
+                        {% for year in years_range %}
+                            <option value="{{ year }}" {% if selected_year|stringformat:"s" == year|stringformat:"s" %}selected{% endif %}>
+                                {{ year }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
 
+            <button type="submit" class="filter-submit">🔍 Показать</button>
+            <a href="{% url 'filter_music' %}" class="reset-link">Сбросить</a>
+        </form>
+    </div>
+</div>
+
+{% if not selected_type and not selected_genre and not selected_year %}
+<div class="new-releases">
+    <h2 class="section-title">🔥 Новинки</h2>
+    <div class="new-music-grid">
+        <!-- Новая песня -->
+        {% if newest_song %}
+        <div class="music-card new-card">
+            <div class="music-header">
+                <span class="music-category">🎵 Новая песня</span>
+            </div>
+            <h3 class="music-title">{{ newest_song.title|default:"Без названия" }}</h3>
+            <p class="music-artist"><strong>Исполнитель:</strong> {{ newest_song.artist.title|default:"Не указан" }}</p>
+            <p><strong>Год выпуска:</strong> {{ newest_song.year|default:"?" }}</p>
+            <p><strong>Жанр:</strong> {{ newest_song.genre.title|default:"Не указан" }}</p>
             <div class="music-footer">
                 <span class="listen-link">Слушать →</span>
             </div>
         </div>
-        {% if not forloop.last %}
-        <hr>
         {% endif %}
-        {% endfor %}
-    </div>
 
-    <h2 class="section-title">Альбомы</h2>
-    <div class="music-list">
-        {% for al in albums %}
-        <div class="music-card">
+        <!-- Новый альбом -->
+        {% if newest_album %}
+        <div class="music-card new-card">
             <div class="music-header">
-                <span class="music-category">💿 Альбом</span>
+                <span class="music-category">💿 Новый альбом</span>
             </div>
-
-            <h3 class="music-title">{{ al.title }}</h3>
-
-            <p class="music-artist"><strong>Исполнитель:</strong> {{ al.artist }}</p>
-            <p><strong>Год выпуска:</strong> {{ al.year }}</p>
-            <p><strong>Жанр:</strong> {{ al.genre }}</p>
-            <p><strong>Количество песен:</strong> {{ al.songs_count }}</p>
-
+            <h3 class="music-title">{{ newest_album.title|default:"Без названия" }}</h3>
+            <p class="music-artist"><strong>Исполнитель:</strong> {{ newest_album.artist_id.title|default:"Не указан" }}</p>
+            <p><strong>Год выпуска:</strong> {{ newest_album.year|default:"?" }}</p>
+            <p><strong>Жанр:</strong> {{ newest_album.genre_id.title|default:"Не указан" }}</p>
+            <p><strong>Количество песен:</strong> {{ newest_album.songs_count|default:"0" }}</p>
             <div class="music-footer">
                 <span class="listen-link">Слушать →</span>
             </div>
         </div>
-        {% if not forloop.last %}
-        <hr>
         {% endif %}
+    </div>
+</div>
+ {% endif %}
+
+{% if high_rated_songs_by_album and selected_type != 'song' %}
+<div class="group-section">
+    <h2>⭐ Альбомы с песнями высокого рейтинга (8+ баллов)</h2>
+    <div class="group-list">
+        {% for item in high_rated_songs_by_album %}
+        <div class="group-item">
+            <span class="group-title">{{ item.album__title|default:"Без названия" }}</span>
+            <span class="group-year">({{ item.album__year|default:"?" }})</span>
+            <span class="group-count">— {{ item.high_rated_count }} песен с рейтингом 8+</span>
+        </div>
+        {% empty %}
+        <p>Нет песен с рейтингом выше 8</p>
         {% endfor %}
     </div>
+</div>
+{% endif %}
+
+<!-- Основной список песен и альбомов -->
+<div class="music-results">
+    {% if songs %}
+    <div class="songs-section">
+        <h2>🎵 Песни</h2>
+        <div class="music-list">
+            {% for song in songs %}
+            <div class="music-card">
+                <div class="music-header">
+                    <span class="music-category">🎵 Песня</span>
+                </div>
+                <h3 class="music-title">{{ song.title|default:"Без названия" }}</h3>
+                <p class="music-artist"><strong>Исполнитель:</strong> {{ song.artist.title|default:"Не указан" }}</p>
+                <p><strong>Альбом:</strong> {{ song.album.title|default:"Не указан" }}</p>
+                <p><strong>Год выпуска:</strong> {{ song.year|default:"?" }}</p>
+                <p><strong>Жанр:</strong> {{ song.genre.title|default:"Не указан" }}</p>
+                <div class="music-footer">
+                    <span class="listen-link">Слушать →</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if albums %}
+    <div class="albums-section">
+        <h2>💿 Альбомы</h2>
+        <div class="music-list">
+            {% for album in albums %}
+            <div class="music-card">
+                <div class="music-header">
+                    <span class="music-category">💿 Альбом</span>
+                </div>
+                <h3 class="music-title">{{ album.title|default:"Без названия" }}</h3>
+                <p class="music-artist"><strong>Исполнитель:</strong>
+                    {% if album.artist_id %}
+                        {{ album.artist_id.title }}
+                    {% elif album.artist_id__title %}
+                        {{ album.artist_id__title }}
+                    {% else %}
+                        Не указан
+                    {% endif %}
+                </p>
+                <p><strong>Год выпуска:</strong> {{ album.year|default:"?" }}</p>
+                <p><strong>Жанр:</strong>
+                    {% if album.genre_id %}
+                        {{ album.genre_id.title }}
+                    {% elif album.genre_id__title %}
+                        {{ album.genre_id__title }}
+                    {% else %}
+                        Не указан
+                    {% endif %}
+                </p>
+                <p><strong>Количество песен:</strong> {{ album.songs_count|default:"0" }}</p>
+                <div class="music-footer">
+                    <span class="listen-link">Слушать →</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not songs and not albums %}
+    <div class="no-results">
+        <p>Ничего не найдено. Попробуйте изменить параметры поиска.</p>
+    </div>
+    {% endif %}
 </div>
 
 <link rel="stylesheet" type="text/css" href="{% static 'music/css/music_style.css' %}">

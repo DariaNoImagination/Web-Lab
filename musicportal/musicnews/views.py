@@ -1,5 +1,8 @@
 from django.shortcuts import render
 from musicnews.models import News
+from django.db.models import Q
+from django.utils import timezone
+from datetime import timedelta
 
 category_names = {
         'events': 'Концерты и события',
@@ -26,9 +29,12 @@ def categories(request):
 
 
 def news_by_category(request, category_slug):
+    week_ago = timezone.now() - timedelta(days=7)
     news = News.objects.all()
-    filtered_news = [news for news in news if news.category == category_slug]
-
+    filtered_news = News.objects.filter(
+        Q(category=category_slug) &
+        Q(created_at__gte=week_ago)
+    )
     category_name = category_names.get(category_slug, category_slug)
 
     data = {

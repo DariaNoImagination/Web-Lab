@@ -1,25 +1,66 @@
 {% load static %}
-
 <div class="reviews-list">
     {% for review in reviews %}
     <div class="review-card">
         <div class="review-header">
             <span class="review-category">
-                {% if review.type == 'album' %}💿 Альбом
-                {% elif review.type == 'song' %}🎵 Песня
+                {# Поддержка и объектов, и словарей #}
+                {% if review.song %}
+                    🎵 Песня
+                {% elif review.album %}
+                    💿 Альбом
+                {% elif review.content_type == 'song' %}
+                    🎵 Песня
+                {% elif review.content_type == 'album' %}
+                    💿 Альбом
+                {% elif review.song__title %}
+                    🎵 Песня
+                {% elif review.album__title %}
+                    💿 Альбом
                 {% endif %}
             </span>
         </div>
 
-        <h3 class="review-title">{{ review.title }}</h3>
+        <h3 class="review-title">
+            {# Объекты #}
+            {% if review.song %}
+                {{ review.song.title }}
+            {% elif review.album %}
+                {{ review.album.title }}
+            {# Словари с аннотациями #}
+            {% elif review.content_title %}
+                {{ review.content_title }}
+            {# Простые словари #}
+            {% elif review.song__title %}
+                {{ review.song__title }}
+            {% elif review.album__title %}
+                {{ review.album__title }}
+            {% endif %}
+        </h3>
 
-        <p class="review-artist"><strong>Исполнитель:</strong> {{ review.artist }}</p>
+        <p class="review-artist">
+            <strong>Исполнитель:</strong>
+            {# Объекты #}
+            {% if review.song %}
+                {{ review.song.artist.title }}
+            {% elif review.album %}
+                {{ review.album.artist.title }}
+            {# Словари с аннотациями #}
+            {% elif review.artist_name %}
+                {{ review.artist_name }}
+            {# Простые словари #}
+            {% elif review.song__artist__title %}
+                {{ review.song__artist__title }}
+            {% elif review.album__artist_id__title %}
+                {{ review.album__artist_id__title }}
+            {% endif %}
+        </p>
 
         <p><strong>Оценка:</strong>
             <span class="review-rating">{{ review.rating }}/10</span>
         </p>
 
-        <p><strong>Рецензия:</strong> {{ review.text }}</p>
+        <p><strong>Рецензия:</strong> {{ review.text|truncatewords:50 }}</p>
 
         <p><strong>Дата:</strong> {{ review.date }}</p>
 
@@ -34,4 +75,5 @@
     <p>Нет доступных рецензий</p>
     {% endfor %}
 </div>
- <link rel="stylesheet" type="text/css" href="{% static 'reviews/css/reviews_style.css' %}">
+
+<link rel="stylesheet" type="text/css" href="{% static 'reviews/css/reviews_style.css' %}">

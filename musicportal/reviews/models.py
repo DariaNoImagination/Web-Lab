@@ -1,4 +1,5 @@
 from django.db import models
+from music.models import Album,Song
 
 class PublishedModel(models.Manager):
     def get_queryset(self):
@@ -9,15 +10,8 @@ class Review(models.Model):
         DRAFT = 0, 'Черновик'
         PUBLISHED = 1, 'Опубликовано'
 
-    TYPE_CHOICES = [
-        ('album', 'Альбом'),
-        ('song', 'Песня'),
-    ]
-
-    type = models.CharField(max_length=10, choices=TYPE_CHOICES, verbose_name="Тип рецензии")
-    title = models.CharField(max_length=255, verbose_name="Название")
-    artist = models.CharField(max_length=255, verbose_name="Исполнитель")
-    genre = models.CharField(max_length=10, verbose_name="Жанр")
+    song = models.ForeignKey(Song, on_delete=models.DO_NOTHING, default= None, null=True,blank=True)
+    album = models.ForeignKey(Album,on_delete=models.DO_NOTHING, default= None, null=True, blank=True)
     rating = models.IntegerField(verbose_name="Рейтинг")
     text = models.TextField(verbose_name="Текст рецензии")
     date = models.CharField(max_length=50, verbose_name="Дата публикации")
@@ -30,5 +24,4 @@ class Review(models.Model):
         verbose_name_plural = "Рецензии"
         ordering = ['-date']
 
-    def __str__(self):
-        return f"{self.get_type_display()}: {self.title}"
+

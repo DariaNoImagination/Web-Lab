@@ -61,4 +61,218 @@
             height: 150px;
         }
     }
+
+    .filters-header {
+        max-width: 800px;
+        margin: 0 auto 20px auto;
+    }
+
+    .filter-links {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        justify-content: center;
+    }
+
+    .filter-links a {
+        background: white;
+        color: #00688B;
+        text-decoration: none;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 1px solid #48D1CC;
+    }
+
+    .filter-links a:hover {
+        background: #48D1CC;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,206,209,0.3);
+    }
+
+    /* Year Filter - в стиле artist-item */
+    .year-filter {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+        margin-bottom: 20px;
+    }
+
+    .year-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,206,209,0.2);
+    }
+
+    .year-form {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .year-form > label {
+        color: #00688B;
+        font-weight: 600;
+        font-size: 15px;
+        margin-right: 5px;
+    }
+
+    /* Стилизованный select */
+    .styled-select {
+        position: relative;
+        display: inline-block;
+    }
+
+    .styled-select select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background: #f8f9fa;
+        border: 1px solid #48D1CC;
+        padding: 8px 30px 8px 12px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 110px;
+    }
+
+    .styled-select select:hover {
+        border-color: #00688B;
+        background: white;
+        transform: scale(1.02);
+    }
+
+    .styled-select select:focus {
+        outline: none;
+        border-color: #00688B;
+        box-shadow: 0 0 0 2px rgba(0,206,209,0.2);
+    }
+
+    /* Кастомная стрелка */
+    .styled-select::after {
+        content: "▼";
+        font-size: 10px;
+        color: #48D1CC;
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        transition: all 0.2s;
+    }
+
+    .styled-select:hover::after {
+        color: #00688B;
+        transform: translateY(-50%) rotate(180deg);
+    }
+
+    /* Разделитель */
+    .separator {
+        font-size: 18px;
+        font-weight: bold;
+        color: #48D1CC;
+    }
+
+    /* Чекбокс */
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #555;
+        font-size: 13px;
+        cursor: pointer;
+        padding: 5px 10px;
+        background: #f8f9fa;
+        border-radius: 20px;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .checkbox-label:hover {
+        background: white;
+        border-color: #48D1CC;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: #48D1CC;
+    }
+
+    .checkbox-label span {
+        user-select: none;
+    }
+
+    /* Кнопка отправки */
+    .filter-submit {
+        background: #48D1CC;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .filter-submit:hover {
+        background: #00688B;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,104,139,0.3);
+    }
+
+    .filter-submit:active {
+        transform: translateY(0);
+    }
+
+
+    @media (max-width: 600px) {
+        .year-form {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .styled-select select {
+            min-width: 180px;
+        }
+
+        .separator {
+            transform: rotate(90deg);
+        }
+
+        .checkbox-label {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .filter-submit {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .filter-links {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .filter-links a {
+            width: 100%;
+            text-align: center;
+        }
+    }
 </style>

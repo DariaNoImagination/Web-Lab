@@ -1,25 +1,108 @@
 {% load static %}
+{% load music_tags %}
+
+<div class="filters-header">
+    <div class="filter-links">
+        <a href="{% url 'all_artists' %}">Все исполнители</a>
+        <a href="{% url 'genres_for_artists' %}">По жанрам</a>
+    </div>
+
+    <div class="year-filter">
+        <form method="get" action="{% url 'year_artist_filter' %}" class="year-form">
+            <label> Период активности:</label>
+
+            <div class="styled-select">
+                <select name="start_year" id="start_year">
+                    <option value="">С года</option>
+                    {% for year in years_range %}
+                        <option value="{{ year }}" {% if selected_start == year %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <span class="separator">→</span>
+
+            <div class="styled-select">
+                <select name="end_year" id="end_year">
+                    <option value="">По год</option>
+                    {% for year in years_range %}
+                        <option value="{{ year }}" {% if selected_end == year %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <label class="checkbox-label">
+                <input type="checkbox" name="to_present" value="true" {% if selected_present %}checked{% endif %}>
+                <span> По настоящее время</span>
+            </label>
+
+            <button type="submit" class="filter-submit">
+                🔍 Показать
+            </button>
+        </form>
+    </div>
+</div>
+
 <ul class="artist-list">
-    {% for artist in artists %}
+    {% for artist in posts %}
     <li class="artist-item">
-        <img src="{% static 'artists/images/' %}{{ artist.title|cut:' ' }}.jpg"
-             alt="{{ artist.title }}"
+        {# Картинка #}
+        <img src="{% static 'artists/images/' %}{% if artist.title %}{{ artist.title|cut:' ' }}{% else %}{{ artist.title }}{% endif %}.jpg"
+             alt="{% if artist.title %}{{ artist.title }}{% else %}{{ artist.title }}{% endif %}"
              class="artist-thumb">
+
         <div class="artist-info">
-            <h2>{{ artist.title }}</h2>
+            {# Заголовок - поддерживает и объекты, и словари #}
+            <h2>
+                {% if artist.title %}
+                    {{ artist.title }}
+                {% elif artist.title %}
+                    {{ artist.title }}
+                {% endif %}
+            </h2>
+
+            {# Жанр #}
             <p><strong>Жанр:</strong>
-            {% if artist.genre == 'pop' %}
-                Поп
-            {% elif artist.genre == 'rock' %}
-                Рок
-            {% elif artist.genre == 'rnb' or artist.genre == 'r&b' %}
-                R&B
-            {% else %}
-                {{ artist.genre }}
-            {% endif %}
+                {% if artist.genre_id__title %}
+                    {{ artist.genre_id__title }}
+                {% elif artist.genre.title %}
+                    {{ artist.genre.title }}
+                {% elif artist.genre_id.title %}
+                    {{ artist.genre_id.title }}
+                {% else %}
+                    Не указан
+                {% endif %}
             </p>
-            <p><strong>Годы активности:</strong> {{ artist.active_years  }}</p>
-            <p>{{ artist.content }}</p>
+
+            {# Годы активности #}
+            <p><strong>Годы активности:</strong>
+                {% if artist.display_years %}
+                    {# Для словарей из values() #}
+                    {{ artist.display_years }}
+                {% elif artist.active_to is None %}
+                    {# Для объектов #}
+                    {{ artist.active_from }} - настоящее время
+                {% else %}
+                    {{ artist.active_from }} - {{ artist.active_to }}
+                {% endif %}
+            </p>
+
+            {# Длина карьеры (если есть) #}
+            {% if artist.career_length %}
+            <p><strong>Длительность карьеры:</strong> {{ artist.career_length }} лет</p>
+            {% endif %}
+
+            {# Контент/биография #}
+            <p>
+                {% if artist.content %}
+                    {{ artist.content|truncatewords:30 }}
+                {% elif artist.bio %}
+                    {{ artist.bio|truncatewords:30 }}
+                {% else %}
+                    {{ artist.content|truncatewords:30|default:"" }}
+                {% endif %}
+            </p>
+
             <span>Подробнее →</span>
         </div>
     </li>
@@ -27,5 +110,18 @@
     <li>Нет доступных исполнителей</li>
     {% endfor %}
 </ul>
+
+<!-- Sidebar слева -->
+<div class="left-chapters">
+    <ul id="leftchapters">
+        <li>{% show_all_tags %}</li>
+    </ul>
+</div>
+
+<!-- Конец Sidebar'а -->
+<div class="content">
+    {% block content %}
+    {% endblock %}
+</div>
 
 <link rel="stylesheet" type="text/css" href="{% static 'artists/css/artists_style.css' %}">

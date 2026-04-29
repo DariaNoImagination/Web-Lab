@@ -9,7 +9,7 @@
 
             <h3 class="community-title">{{ community.club_name }}</h3>
 
-            <p class="community-artist"><strong>Исполнитель:</strong> {{ community.artist }}</p>
+            <p class="community-artist"><strong>Исполнитель:</strong> {{ community.artist.title }}</p>
 
             {% if community.description %}
             <p class="community-description">{{ community.description }}</p>
