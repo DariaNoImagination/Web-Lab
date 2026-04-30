@@ -16,3 +16,6 @@ urlpatterns = [
 handler404 = views.page_not_found
 handler403 = views.permission_denied
 handler500 = views.server_error
+
+admin.site.site_header = "Панель администрирования"
+admin.site.index_title = "Музыкальный портал"

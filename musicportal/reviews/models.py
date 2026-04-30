@@ -10,8 +10,8 @@ class Review(models.Model):
         DRAFT = 0, 'Черновик'
         PUBLISHED = 1, 'Опубликовано'
 
-    song = models.ForeignKey(Song, on_delete=models.DO_NOTHING, default= None, null=True,blank=True)
-    album = models.ForeignKey(Album,on_delete=models.DO_NOTHING, default= None, null=True, blank=True)
+    song = models.ForeignKey(Song, on_delete=models.DO_NOTHING, default= None, null=True,blank=True, verbose_name= "Песня")
+    album = models.ForeignKey(Album,on_delete=models.DO_NOTHING, default= None, null=True, blank=True, verbose_name= "Альбом")
     rating = models.IntegerField(verbose_name="Рейтинг")
     text = models.TextField(verbose_name="Текст рецензии")
     date = models.CharField(max_length=50, verbose_name="Дата публикации")

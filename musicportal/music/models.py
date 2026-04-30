@@ -27,11 +27,11 @@ class Album(models.Model):
 
 
 class Song(models.Model):
-    artist = models.ForeignKey(Artist,on_delete=models.CASCADE,default = 1)
+    artist = models.ForeignKey(Artist,on_delete=models.CASCADE,default = 1, verbose_name="Исполнитель")
     title = models.CharField(max_length=255, verbose_name="Название песни")
-    album= models.ForeignKey(Album,on_delete=models.CASCADE, default = 1)
+    album= models.ForeignKey(Album,on_delete=models.CASCADE, default = 1, verbose_name="Альбом")
     year = models.IntegerField(verbose_name="Год выпуска")
-    genre = models.ForeignKey(Genre,on_delete=models.PROTECT, default = 1)
+    genre = models.ForeignKey(Genre,on_delete=models.PROTECT, default = 1, verbose_name="Жанр")
 
     class Meta:
         verbose_name = "Песня"
