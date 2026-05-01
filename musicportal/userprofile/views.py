@@ -25,13 +25,6 @@ def user_profile(request, username):
                 ]
             },
             {
-                'name': 'Coldplay',
-                'genre': 'Рок',
-                'favorite_songs': [
-                    {'title': 'Viva la Vida', 'album': 'Viva la Vida', 'year': 2008},
-                ]
-            },
-            {
                 'name': 'Lady Gaga',
                 'genre': 'Поп',
                 'favorite_songs': []
@@ -40,23 +33,6 @@ def user_profile(request, username):
 
 
         'reviews': [
-            {
-                'type': 'album',
-                'title': 'Midnights',
-                'artist': 'Taylor Swift',
-                'album': 'Midnights',
-                'rating': 9,
-                'text': 'Отличный альбом! Очень понравились эксперименты со звуком.',
-                'date': '10 марта 2025'
-            },
-            {
-                'type': 'song',
-                'title': 'Blinding Lights',
-                'artist': 'The Weeknd',
-                'rating': 10,
-                'text': 'Одна из лучших песен последних лет!',
-                'date': '5 марта 2025'
-            },
         ],
         'communities': [
             {
