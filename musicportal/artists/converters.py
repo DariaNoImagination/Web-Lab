@@ -12,15 +12,14 @@ class YearRangeConverter:
             is_present = True
         else:
             end_year = int(end_part)
-            is_present = False
+            is_present = (end_year == start_year)
 
         result = {
             'start': start_year,
             'end': end_year,
             'is_present': is_present,
-            'display': f"{start_year}-{'present' if is_present else end_year}"
-        }
-        print(f"DEBUG to_python result: {result}")
+            'display': f"{start_year}-{'present' if is_present else end_year}"}
+
         return result
 
     def to_url(self, value):

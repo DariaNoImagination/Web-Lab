@@ -8,10 +8,16 @@ from .converters import  YearRangeConverter
 register_converter(YearRangeConverter, 'year_range')
 
 def index(request):
+    artists  = Artist.objects.all()
+    artists_data = artists.annotate(
+        career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
+    ).values(
+        'id', 'title', 'active_from', 'active_to','genre_id__title','content',
+    ).order_by('-career_length')
     data = {
         'title': 'Музыкальные исполнители',
         'years_range': range(1980, 2027),
-        'posts': Artist.objects.all(),
+        'posts': artists_data,
     }
     return render(request, 'information.html',
                   context=data)
@@ -38,9 +44,14 @@ def artists_by_genre(request, genre_slug):
         }
         return render(request, 'information.html', context=data)
     artists = Artist.objects.filter(genre_id=genre)
+    artists_data = artists.annotate(
+        career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
+    ).values(
+        'id', 'title', 'active_from', 'active_to', 'genre_id__title', 'content',
+    ).order_by('-career_length')
     data = {
         'title': f'Исполнители жанра {genre.title}',
-        'posts': artists,
+        'posts': artists_data,
         'app_name': 'artists'
     }
     return render(request, 'information.html', context=data)
@@ -59,17 +70,21 @@ def get_artists_word(count):
 def show_tag_artistlist(request, tag_slug):
     tag = get_object_or_404(TagPost, slug=tag_slug)
     artists = tag.artists.values('id', 'title', 'active_from', 'active_to', 'genre_id__title', 'content')
+    artists_data = artists.annotate(
+        career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
+    ).values(
+        'id', 'title', 'active_from', 'active_to', 'genre_id__title', 'content',
+    ).order_by('-career_length')
     artists_count = artists.count()
     data = {
         'title': f'{tag.tag} ({artists_count} {get_artists_word(artists_count)})',
-        'posts': artists,
+        'posts': artists_data,
         'app_name': 'artists'
      }
     return render(request, 'information.html', context=data)
 
 
 def artists_by_years_filter(request):
-
     start_year = request.GET.get('start_year')
     end_year = request.GET.get('end_year')
     to_present = request.GET.get('to_present') == 'true'
@@ -84,6 +99,18 @@ def artists_by_years_filter(request):
         return redirect('all_artists')
 
 
+    if not end_year:
+        to_present = True
+    else:
+        try:
+            end_year = int(end_year)
+
+            if end_year == start_year:
+                to_present = True
+        except (ValueError, TypeError):
+            to_present = True
+
+
     if to_present:
         years_dict = {
             'start': start_year,
@@ -92,14 +119,6 @@ def artists_by_years_filter(request):
             'display': f'{start_year}-present'
         }
     else:
-        if not end_year:
-            end_year = start_year
-
-        try:
-            end_year = int(end_year)
-        except (ValueError, TypeError):
-            end_year = start_year
-
         years_dict = {
             'start': start_year,
             'end': end_year,
@@ -107,11 +126,8 @@ def artists_by_years_filter(request):
             'display': f'{start_year}-{end_year}'
         }
 
-    # Перенаправляем на URL с конвертером
+
     return redirect('year_artist', years=years_dict)
-
-
-
 
 
 def artists_by_years(request, years):
@@ -119,20 +135,21 @@ def artists_by_years(request, years):
     end = years['end']
     is_present = years['is_present']
     display = years['display']
+
     artists = Artist.objects.filter(active_from__isnull=False)
 
     if is_present:
 
         artists = artists.filter(
             Q(active_from=start) &
-            (Q(active_to__isnull=True) | Q(active_to__gte=start))
+            Q(active_to__isnull=True)
         )
         title = f"Исполнители, активные с {start} года по настоящее время"
     else:
 
         artists = artists.filter(
-            Q(active_from__gte=end) &
-            (Q(active_to__isnull=True) | Q(active_to__gte=start))
+            Q(active_from=start) &
+            Q(active_to=end)
         )
 
         if start == end:
@@ -140,25 +157,32 @@ def artists_by_years(request, years):
         else:
             title = f"Исполнители, активные в период {start}-{end} годов"
 
+
+    from datetime import datetime
+    current_year = datetime.now().year
+
+
     artists_data = artists.annotate(
-        career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
+        career_length=Coalesce(F('active_to'), Value(current_year)) - F('active_from')
     ).values(
-        'id', 'title', 'active_from', 'active_to', 'career_length', 'genre_id__title'
+        'id', 'title', 'active_from', 'active_to', 'career_length', 'genre__title', 'content'
     ).order_by('-career_length')
+
 
     for artist in artists_data:
         artist['is_active'] = artist['active_to'] is None
         artist[
             'display_years'] = f"{artist['active_from']} - {'настоящее время' if artist['is_active'] else artist['active_to']}"
+        artist['genre_title'] = artist['genre__title']
 
     context = {
         'title': title,
-        'posts': artists,
+        'posts': artists_data,
         'start': start,
         'end': end,
         'is_present': is_present,
         'display': display,
-        'total_count': artists.count(),
-        'years_range': range(1980, 2027),
+        'total_count': len(artists_data),
+        'years_range': range(1980, current_year + 1),
     }
     return render(request, 'information.html', context)

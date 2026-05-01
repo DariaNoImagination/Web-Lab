@@ -128,6 +128,10 @@
                 <p><strong>Альбом:</strong> {{ song.album.title|default:"Не указан" }}</p>
                 <p><strong>Год выпуска:</strong> {{ song.year|default:"?" }}</p>
                 <p><strong>Жанр:</strong> {{ song.genre.title|default:"Не указан" }}</p>
+                {% if song.get_avg_rating > 0 %}
+                <p><strong>Рейтинг (на основе рецензий):</strong> {{ song.get_avg_rating }}</p>
+                {% endif %}
+
                 <div class="music-footer">
                     <span class="listen-link">Слушать →</span>
                 </div>
@@ -167,6 +171,9 @@
                     {% endif %}
                 </p>
                 <p><strong>Количество песен:</strong> {{ album.songs_count|default:"0" }}</p>
+                {% if album.get_avg_rating > 0 %}
+                <p><strong>Рейтинг (на основе рецензий):</strong> {{ album.get_avg_rating }}</p>
+                {% endif %}
                 <div class="music-footer">
                     <span class="listen-link">Слушать →</span>
                 </div>
