@@ -1,6 +1,7 @@
 from reviews.models import Review, Comment
 from artists.models import Genre
 from django.shortcuts import render, get_object_or_404,redirect
+from django.utils import timezone
 
 from django.db.models import Q
 from .forms import AddCommentForm,AddReviewForm
@@ -91,7 +92,9 @@ def add_review(request):
     if request.method == 'POST':
         form = AddReviewForm(request.POST)
         if form.is_valid():
-            form.save()
+            review = form.save(commit=False)
+            review.date = timezone.now().strftime('%Y-%m-%d')  # Устанавливаем текущую дату
+            review.save()
             return redirect('all_reviews')
     else:
         form = AddReviewForm()
