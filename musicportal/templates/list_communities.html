@@ -31,5 +31,10 @@
 {% else %}
     <p>Нет доступных сообществ</p>
 {% endif %}
+<div class="add-community-btn-container">
+    <a href="{% url 'add_community' %}" class="add-community-btn">
+        ➕ Добавить сообщество
+    </a>
+</div>
 <link rel="stylesheet" type="text/css" href="{% static 'communities/css/fanclub.css' %}">
 

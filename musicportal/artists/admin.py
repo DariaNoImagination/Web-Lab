@@ -1,8 +1,6 @@
 from django.contrib import admin
-
-# Register your models here.
 from .models import Artist,Genre,TagPost
-
+from django.utils.safestring import mark_safe
 @admin.register(TagPost)
 class TagPostAdmin(admin.ModelAdmin):
 
@@ -37,7 +35,8 @@ class ArtistAdmin(admin.ModelAdmin):
         'active_from',
         'active_to',
         'get_career_length',
-        'get_tags'
+        'get_tags',
+        'artist_photo'
     )
     list_display_links = ('id', 'title')
     list_editable = ('active_from', 'active_to')
@@ -61,9 +60,11 @@ class ArtistAdmin(admin.ModelAdmin):
                 return  queryset.filter(active_to__isnull=False)
 
     list_filter = ('genre', 'tags',ActivityFilter)
+    readonly_fields = ('artist_photo',)  # ← Здесь!
+
     fieldsets = (
         ('Основная информация', {
-            'fields': ('title', 'genre', 'content')
+            'fields': ('title', 'genre', 'content', 'photo', 'artist_photo')
         }),
         ('Период активности', {
             'fields': ('active_from', 'active_to'),
@@ -89,6 +90,11 @@ class ArtistAdmin(admin.ModelAdmin):
             return f"{end - obj.active_from} лет"
         return "—"
 
+    @admin.display(description="Изображение")
+    def artist_photo(self, artist: Artist):
+        if artist.photo:
+            return mark_safe(f"<img src = '{artist.photo.url}' width = 50 > ")
+        return "Без фото"
 
 
 
@@ -98,4 +104,6 @@ class ArtistAdmin(admin.ModelAdmin):
     get_tags.short_description = 'Теги'
 
     actions = ['set_active', 'set_inactive']
+
+
 

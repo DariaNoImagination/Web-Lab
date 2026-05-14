@@ -152,20 +152,20 @@
                 </div>
                 <h3 class="music-title">{{ album.title|default:"Без названия" }}</h3>
                 <p class="music-artist"><strong>Исполнитель:</strong>
-                    {% if album.artist_id %}
-                        {{ album.artist_id.title }}
-                    {% elif album.artist_id__title %}
-                        {{ album.artist_id__title }}
+                    {% if album.artist.title %}
+                        {{ album.artist.title }}
+                    {% elif album.artist.title %}
+                        {{ album.artist.title }}
                     {% else %}
                         Не указан
                     {% endif %}
                 </p>
                 <p><strong>Год выпуска:</strong> {{ album.year|default:"?" }}</p>
                 <p><strong>Жанр:</strong>
-                    {% if album.genre_id %}
-                        {{ album.genre_id.title }}
-                    {% elif album.genre_id__title %}
-                        {{ album.genre_id__title }}
+                    {% if album.genre %}
+                        {{ album.genre.title }}
+                    {% elif album.genre.title %}
+                        {{ album.genre.title }}
                     {% else %}
                         Не указан
                     {% endif %}
@@ -188,6 +188,14 @@
         <p>Ничего не найдено. Попробуйте изменить параметры поиска.</p>
     </div>
     {% endif %}
+    <div class="add-buttons-container">
+    <a href="{% url 'add_song' %}" class="add-btn">
+        ➕ Добавить песню
+    </a>
+    <a href="{% url 'add_album' %}" class="add-btn">
+        ➕ Добавить альбом
+    </a>
+</div>
 </div>
 
 <link rel="stylesheet" type="text/css" href="{% static 'music/css/music_style.css' %}">

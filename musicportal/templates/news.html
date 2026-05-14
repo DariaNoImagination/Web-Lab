@@ -36,5 +36,10 @@
     {% else %}
         <p>Нет новостей в этой категории</p>
     {% endif %}
+<div class="add-news-btn-container">
+    <a href="{% url 'add_news' %}" class="add-news-btn">
+        ➕ Добавить новость
+    </a>
+</div>
 <link rel="stylesheet" type="text/css" href="{% static 'musicnews/css/news_style.css' %}">
 {% endblock %}

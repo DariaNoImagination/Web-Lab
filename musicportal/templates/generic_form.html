@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="form-container">
+    <h1 class="form-title">{{ title }}</h1>
+
+    <form action="" method="post" class="comment-form" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="form-error-messages">
+            {% for error in form.non_field_errors %}
+                <div class="form-error">{{ error }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% for f in form %}
+        <div class="form-group">
+            <label class="form-label" for="{{ f.id_for_label }}">
+                {{ f.label }}:
+                {% if f.field.required %}
+                    <span class="required-star">*</span>
+                {% endif %}
+            </label>
+            {{ f }}
+            {% if f.help_text %}
+                <small class="form-help">{{ f.help_text }}</small>
+            {% endif %}
+            {% if f.errors %}
+                <div class="field-errors">
+                    {% for error in f.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="submit-btn">
+            <span>{{ button_text|default:"Отправить" }}</span>
+        </button>
+    </form>
+</div>
+
+<style>
+.form-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.form-title {
+    color: #00688B;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 1.8em;
+    border-bottom: 2px solid #48D1CC;
+    padding-bottom: 10px;
+}
+
+.comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #00688B;
+    font-size: 14px;
+}
+
+.required-star {
+    color: #ff4444;
+    margin-left: 3px;
+}
+
+.comment-form input[type="text"],
+.comment-form input[type="email"],
+.comment-form input[type="password"],
+.comment-form input[type="number"],
+.comment-form input[type="date"],
+.comment-form textarea,
+.comment-form select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s;
+    font-family: inherit;
+}
+
+.comment-form input:focus,
+.comment-form textarea:focus,
+.comment-form select:focus {
+    outline: none;
+    border-color: #48D1CC;
+    box-shadow: 0 0 0 3px rgba(72,209,204,0.2);
+}
+
+.comment-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.comment-form select {
+    cursor: pointer;
+    background: white;
+}
+
+.comment-form input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.comment-form .form-group:has(input[type="checkbox"]) {
+    flex-direction: row;
+    align-items: center;
+}
+
+/* Ошибки */
+.form-error-messages {
+    background: #fff0f0;
+    border-left: 4px solid #ff4444;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.form-error {
+    color: #ff4444;
+    font-size: 13px;
+}
+
+.field-errors {
+    margin-top: 5px;
+}
+
+.field-error {
+    color: #ff4444;
+    font-size: 12px;
+    padding: 4px 0;
+}
+
+/* Подсказки */
+.form-help {
+    color: #888;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+/* Кнопка отправки */
+.submit-btn {
+    background: #48D1CC;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    width: auto;
+    margin-top: 10px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,104,139,0.3);
+    background: #00688B;
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+</style>
+{% endblock %}

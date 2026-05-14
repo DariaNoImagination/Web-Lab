@@ -8,5 +8,6 @@ urlpatterns = [
     path('tag/<slug:tag_slug>/',views.show_tag_artistlist, name='tag'),
     path('years/', views.artists_by_years_filter, name="year_artist_filter"),
     path('<year_range:years>/', views.artists_by_years, name="year_artist"),
+    path('add/', views.add_artist, name='add_artist'),
 ]
 

@@ -24,4 +24,18 @@ class Review(models.Model):
         verbose_name_plural = "Рецензии"
         ordering = ['-date']
 
+class Comment(models.Model):
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='comments')
+    author = models.CharField(max_length=100, verbose_name="Автор")
+    text = models.TextField(verbose_name="Текст комментария")
+    rating = models.IntegerField(verbose_name="Оценка рецензии",null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    is_published = models.BooleanField(default=True, verbose_name="Опубликован")
 
+    class Meta:
+        verbose_name = "Комментарий"
+        verbose_name_plural = "Комментарии"
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.author}: {self.text[:50]}"

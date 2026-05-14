@@ -44,6 +44,9 @@ class Artist(models.Model):
     tags = models.ManyToManyField('TagPost', blank=True, related_name='artists', verbose_name="Теги")
     active_from = models.IntegerField(null=True, blank=True, verbose_name="Активен с")
     active_to = models.IntegerField(null=True, blank=True, verbose_name="Активен по")
+    photo = models.ImageField(upload_to="photos/%Y/%m/%d/",
+                              default=None, blank=True, null=True,
+                              verbose_name="Фото")
 
     class Meta:
         verbose_name = "Исполнитель"
@@ -52,7 +55,7 @@ class Artist(models.Model):
     def __str__(self):
         return self.title
 
-
-
+class UploadFiles(models.Model):
+    file = models.FileField(upload_to='uploads_model')
 
 

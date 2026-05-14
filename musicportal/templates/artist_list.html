@@ -47,69 +47,52 @@
     {% for artist in posts %}
     <li class="artist-item">
         {# Картинка #}
-        <img src="{% static 'artists/images/' %}{% if artist.title %}{{ artist.title|cut:' ' }}{% else %}{{ artist.title }}{% endif %}.jpg"
-             alt="{% if artist.title %}{{ artist.title }}{% else %}{{ artist.title }}{% endif %}"
-             class="artist-thumb">
+
+            {% if artist.photo %}
+                <img class="artist-thumb" src="{{ artist.photo.url }}" alt="{{ artist.title }}">
+            {% else %}
+                <div class="no-photo">🎤</div>
+            {% endif %}
+
 
         <div class="artist-info">
-            {# Заголовок - поддерживает и объекты, и словари #}
-            <h2>
-                {% if artist.title %}
-                    {{ artist.title }}
-                {% elif artist.title %}
-                    {{ artist.title }}
-                {% endif %}
-            </h2>
+            <h2>{{ artist.title }}</h2>
 
-            {# Жанр #}
             <p><strong>Жанр:</strong>
-                {% if artist.genre_id__title %}
-                    {{ artist.genre_id__title }}
-                {% elif artist.genre.title %}
+                {% if artist.genre %}
                     {{ artist.genre.title }}
-                {% elif artist.genre_id.title %}
-                    {{ artist.genre_id.title }}
                 {% else %}
                     Не указан
                 {% endif %}
             </p>
 
-            {# Годы активности #}
             <p><strong>Годы активности:</strong>
-                {% if artist.display_years %}
-                    {# Для словарей из values() #}
-                    {{ artist.display_years }}
-                {% elif artist.active_to is None %}
-                    {# Для объектов #}
-                    {{ artist.active_from }} - настоящее время
-                {% else %}
+                {% if artist.active_to %}
                     {{ artist.active_from }} - {{ artist.active_to }}
+                {% else %}
+                    {{ artist.active_from }} - настоящее время
                 {% endif %}
             </p>
 
-            {# Длина карьеры (если есть) #}
             {% if artist.career_length %}
             <p><strong>Длительность карьеры:</strong> {{ artist.career_length }} лет</p>
             {% endif %}
 
-            {# Контент/биография #}
-            <p>
-                {% if artist.content %}
-                    {{ artist.content|truncatewords:30 }}
-                {% elif artist.bio %}
-                    {{ artist.bio|truncatewords:30 }}
-                {% else %}
-                    {{ artist.content|truncatewords:30|default:"" }}
-                {% endif %}
-            </p>
+            <p>{{ artist.content|truncatewords:30|default:"Нет описания" }}</p>
 
-            <span>Подробнее →</span>
+            <a class="detail-link">Подробнее →</a>
         </div>
     </li>
     {% empty %}
     <li>Нет доступных исполнителей</li>
     {% endfor %}
 </ul>
+
+<div class="add-artist-btn-container">
+    <a href="{% url 'add_artist' %}" class="add-artist-btn">
+        ➕ Добавить исполнителя
+    </a>
+</div>
 
 <!-- Sidebar слева -->
 <div class="left-chapters">
@@ -118,7 +101,6 @@
     </ul>
 </div>
 
-<!-- Конец Sidebar'а -->
 <div class="content">
     {% block content %}
     {% endblock %}

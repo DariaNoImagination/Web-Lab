@@ -67,13 +67,39 @@
         <div class="review-footer">
             <span class="read-link">Читать полностью →</span>
         </div>
+        <div class="comments-section">
+            <h4>Комментарии ({{ review.comments.count }})</h4>
+            {% for comment in review.comments.all %}
+            <div class="comment">
+                <strong>{{ comment.author }}</strong>
+                <small>{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                <p>{{ comment.text }} </p>
+                {% if comment.rating %}
+                <p> Оценка: {{ comment.rating }} </p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p>Нет комментариев</p>
+            {% endfor %}
+            <div class="add-comment-btn">
+                <a href="{% url 'add_comment_url' review.id %}" class="comment-btn">
+            💬 Добавить комментарий
+        </a>
     </div>
+</form>
+    </div>
+        </div>
     {% if not forloop.last %}
     <hr>
     {% endif %}
     {% empty %}
     <p>Нет доступных рецензий</p>
     {% endfor %}
+    <div class="add-review-btn">
+                <a href="{% url 'add_review'%}" class="add-review-btn">
+            Добавить рецензию
+        </a>
+    </div>
 </div>
 
 <link rel="stylesheet" type="text/css" href="{% static 'reviews/css/reviews_style.css' %}">

@@ -1,9 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from musicnews.models import News
 from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
-
+from .forms import AddNewsForm
 category_names = {
         'events': 'Концерты и события',
         'awards': 'Премии и награды',
@@ -45,5 +45,19 @@ def news_by_category(request, category_slug):
 
     return render(request, 'news.html', context=data)
 
+def add_news(request):
+    if request.method == 'POST':
+        form = AddNewsForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('all_news')
+    else:
+        form = AddNewsForm()
+
+    return render(request, 'generic_form.html', {
+        'form': form,
+        'title': 'Добавить новость',
+        'button_text': 'Добавить новость'
+    })
 
 

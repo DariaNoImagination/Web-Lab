@@ -1,9 +1,11 @@
 from django.shortcuts import render, get_object_or_404,redirect
-from artists.models import Artist,Genre,TagPost
+from artists.models import Artist,Genre,TagPost, UploadFiles
 from django.db.models import F,Q,Value
 from django.db.models.functions import Coalesce
 from django.urls import register_converter
 from .converters import  YearRangeConverter
+from .forms import  AddArtistForm
+import uuid
 
 register_converter(YearRangeConverter, 'year_range')
 
@@ -11,8 +13,6 @@ def index(request):
     artists  = Artist.objects.all()
     artists_data = artists.annotate(
         career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
-    ).values(
-        'id', 'title', 'active_from', 'active_to','genre_id__title','content',
     ).order_by('-career_length')
     data = {
         'title': 'Музыкальные исполнители',
@@ -46,12 +46,12 @@ def artists_by_genre(request, genre_slug):
     artists = Artist.objects.filter(genre_id=genre)
     artists_data = artists.annotate(
         career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
-    ).values(
-        'id', 'title', 'active_from', 'active_to', 'genre_id__title', 'content',
     ).order_by('-career_length')
+
     data = {
         'title': f'Исполнители жанра {genre.title}',
         'posts': artists_data,
+        'years_range': range(1980, 2027),
         'app_name': 'artists'
     }
     return render(request, 'information.html', context=data)
@@ -69,11 +69,9 @@ def get_artists_word(count):
 
 def show_tag_artistlist(request, tag_slug):
     tag = get_object_or_404(TagPost, slug=tag_slug)
-    artists = tag.artists.values('id', 'title', 'active_from', 'active_to', 'genre_id__title', 'content')
+    artists = tag.artists
     artists_data = artists.annotate(
         career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
-    ).values(
-        'id', 'title', 'active_from', 'active_to', 'genre_id__title', 'content',
     ).order_by('-career_length')
     artists_count = artists.count()
     data = {
@@ -164,16 +162,12 @@ def artists_by_years(request, years):
 
     artists_data = artists.annotate(
         career_length=Coalesce(F('active_to'), Value(current_year)) - F('active_from')
-    ).values(
-        'id', 'title', 'active_from', 'active_to', 'career_length', 'genre__title', 'content'
     ).order_by('-career_length')
 
-
     for artist in artists_data:
-        artist['is_active'] = artist['active_to'] is None
-        artist[
-            'display_years'] = f"{artist['active_from']} - {'настоящее время' if artist['is_active'] else artist['active_to']}"
-        artist['genre_title'] = artist['genre__title']
+        artist.is_active = artist.active_to is None
+        artist.display_years = f"{artist.active_from} - {'настоящее время' if artist.is_active else artist.active_to}"
+        artist.genre_title = artist.genre.title if artist.genre else "Не указан"
 
     context = {
         'title': title,
@@ -186,3 +180,20 @@ def artists_by_years(request, years):
         'years_range': range(1980, current_year + 1),
     }
     return render(request, 'information.html', context)
+
+def add_artist(request):
+    if request.method == 'POST':
+        form = AddArtistForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            form.save()
+            return redirect('all_artists')
+    else:
+        form = AddArtistForm()
+
+    return render(request, 'generic_form.html', {
+        'form': form,
+        'title': 'Добавление исполнителя',
+        'button_text': 'Добавить'
+    })
+

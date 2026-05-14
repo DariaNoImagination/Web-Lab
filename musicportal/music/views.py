@@ -1,8 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from music.models import Song, Album
 from django.db.models import Count, Q
 from artists.models import Genre
-
+from .forms import AddSongForm,AddAlbumForm
 
 def filter_music(request):
 
@@ -70,12 +70,49 @@ def filter_music(request):
 def about_music(request):
     songs = Song.objects.select_related('artist', 'genre', 'album').all()
     albums = Album.objects.select_related('artist', 'genre').all()
-    new_song = Song.objects.order_by("-year").first()  # Исправлено: сначала новые
+    current_year = 2026
+    years_range = range(1980, current_year + 1)
+    new_song = Song.objects.order_by("-year").first()
     new_album = Album.objects.latest("year")
+    genres = Genre.objects.all()
     data = {
+        'years_range': years_range,
         'songs': songs,
         'albums': albums,
+        'genres': genres,
         'newest_song': new_song,
         'newest_album': new_album
     }
     return render(request, 'music.html', context=data)
+
+
+def add_album(request):
+    if request.method == 'POST':
+        form = AddAlbumForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('all_music')
+    else:
+        form = AddAlbumForm()
+
+    return render(request, 'generic_form.html', {
+        'form': form,
+        'title': 'Добавить альбом',
+        'button_text': 'Добавить альбом'
+    })
+
+
+def add_song(request):
+    if request.method == 'POST':
+        form = AddSongForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('all_music')
+    else:
+        form = AddSongForm()
+
+    return render(request, 'generic_form.html', {
+        'form': form,
+        'title': 'Добавить песню',
+        'button_text': 'Добавить песню'
+    })

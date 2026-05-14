@@ -7,8 +7,10 @@
 
 <h1>{{ title }}</h1>
 
+
 {% if 'исполнители' in title|lower or app_name == 'artists' %}
     {% include 'artist_list.html' with artists=posts %}
+
 
 {% elif 'рецензии' in title|lower or app_name == 'reviews' %}
     <a href="{% url 'all_reviews' %}">Все рецензии</a> |

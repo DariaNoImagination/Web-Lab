@@ -65,10 +65,87 @@
         text-decoration: underline;
     }
 
-    hr {
-        border: 0;
-        height: 1px;
-        background: linear-gradient(to right, transparent, #48D1CC, transparent);
-        margin: 10px 0;
+    .comments-section {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
     }
+
+    .comments-section h4 {
+        color: #00688B;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+    }
+
+    .comment {
+        background: #f9f9f9;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .comment strong {
+        color: #00688B;
+    }
+
+    .comment small {
+        color: #999;
+        font-size: 11px;
+        margin-left: 10px;
+    }
+
+    .comment p {
+        margin-top: 8px;
+        margin-bottom: 0;
+    }
+
+
+
+    .comment-btn {
+        display: inline-block;
+        background: #48D1CC;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 20px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .comment-btn:hover {
+        background: #00688B;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,104,139,0.3);
+        color: white;
+    }
+
+.add-review-btn {
+   background: #48D1CC;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200;
+    margin-top: 10px;
+}
+
+  .add-review-btn:hover {
+        background: #00688B;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+
 </style>
+

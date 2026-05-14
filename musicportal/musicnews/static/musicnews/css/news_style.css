@@ -71,4 +71,31 @@
         color: #00688B;
         text-decoration: underline;
     }
+    .add-news-btn {
+    background: #48D1CC;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: auto;
+    min-width: 200px;
+    margin-top: 10px;
+    text-decoration: none;
+}
+
+.add-news-btn:hover {
+    background: #00688B;
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+}
+
 </style>
