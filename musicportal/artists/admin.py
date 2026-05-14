@@ -60,7 +60,7 @@ class ArtistAdmin(admin.ModelAdmin):
                 return  queryset.filter(active_to__isnull=False)
 
     list_filter = ('genre', 'tags',ActivityFilter)
-    readonly_fields = ('artist_photo',)  # ← Здесь!
+    readonly_fields = ('artist_photo',)
 
     fieldsets = (
         ('Основная информация', {
