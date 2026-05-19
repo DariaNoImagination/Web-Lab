@@ -14,7 +14,6 @@ class ProfanityValidator:
                 raise ValidationError(f"Комментарий содержит запрещённое слово: {word}")
 
 class NoSpamValidator:
-    """Валидатор для проверки на спам"""
 
     def __init__(self, min_words=3):
         self.min_words = min_words
@@ -25,12 +24,11 @@ class NoSpamValidator:
             raise ValidationError(
                 f"Комментарий должен содержать минимум {self.min_words} слова"
             )
+
 class AddCommentForm(forms.Form):
     user_name = forms.CharField(max_length=100, label="Имя")
     text = forms.CharField(widget=forms.Textarea, label="Комментарий",validators=[ProfanityValidator(),NoSpamValidator(), MinLengthValidator(5, message="Минимум 5 символов"), MaxLengthValidator(100, message="Максимум 100 символов"),
  ])
-
-    rating = forms.ChoiceField(choices=[(i, i) for i in range(1, 11)], label="Оценка", required=False)
     is_published = forms.BooleanField(required=False, initial=True, label="Статус")
 
 

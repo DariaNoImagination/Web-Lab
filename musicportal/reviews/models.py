@@ -15,7 +15,7 @@ class Review(models.Model):
     rating = models.IntegerField(verbose_name="Рейтинг")
     text = models.TextField(verbose_name="Текст рецензии")
     date = models.CharField(max_length=50, verbose_name="Дата публикации")
-    is_published =  models.BooleanField(choices=Status.choices,default=Status.DRAFT)
+    is_published =  models.BooleanField(choices=Status.choices,default=Status.DRAFT, verbose_name="Статус")
     objects = models.Manager()
     published = PublishedModel()
 
@@ -28,7 +28,6 @@ class Comment(models.Model):
     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='comments')
     author = models.CharField(max_length=100, verbose_name="Автор")
     text = models.TextField(verbose_name="Текст комментария")
-    rating = models.IntegerField(verbose_name="Оценка рецензии",null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     is_published = models.BooleanField(default=True, verbose_name="Опубликован")
 

@@ -55,6 +55,9 @@ class Artist(models.Model):
     def __str__(self):
         return self.title
 
+    def get_absolute_url(self):
+        return reverse('all_artists')
+
 class UploadFiles(models.Model):
     file = models.FileField(upload_to='uploads_model')
 

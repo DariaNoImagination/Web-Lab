@@ -12,30 +12,44 @@
     <h1>{{ title }}</h1>
 
     {% if news %}
-        <div class="news-list">
-            {% for item in news %}
-            <div class="news-card">
-                <div class="news-header">
-                    <span class="news-category">
-                        {% if item.category == 'events' %}🎤 Концерты
-                        {% elif item.category == 'awards' %}🏆 Премии
-                        {% elif item.category == 'new' %}🔥 Новинки
-                        {% endif %}
-                    </span>
-                </div>
-
-                <h2 class="news-title">{{ item.title }}</h2>
-
-                <p class="news-content">{{ item.content }}</p>
-                <p class="news-date">{{ item.created_at|date:"d.m.Y" }}</p>
-                    <span>Подробнее →</span>
-
-            </div>
-            {% endfor %}
+<div class="news-list">
+    {% for item in news %}
+    <div class="news-card">
+        <div class="news-header">
+            <span class="news-category">
+                {% if item.category == 'events' %}🎤 Концерты
+                {% elif item.category == 'awards' %}🏆 Премии
+                {% elif item.category == 'new' %}🔥 Новинки
+                {% endif %}
+            </span>
         </div>
-    {% else %}
-        <p>Нет новостей в этой категории</p>
-    {% endif %}
+
+        <h2 class="news-title">{{ item.title }}</h2>
+
+        <p class="news-content">{{ item.content|truncatewords:50 }}</p>
+
+        <p class="news-date">{{ item.created_at|date:"d.m.Y" }}</p>
+
+        <div class="news-footer">
+            <span class="read-more">Подробнее →</span>
+        </div>
+
+       <div class="edit-btn">
+                    <a href="{% url 'edit_news' item.id %}" class="edit-btn">
+                        ✏️ Редактировать
+                    </a>
+                </div>
+                 <div class="edit-btn">
+                    <a href="{% url 'delete_news' item.id %}" class="edit-btn">
+                        🗑️ Удалить
+                    </a>
+                </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="no-news">Нет новостей в этой категории </p>
+{% endif %}
 <div class="add-news-btn-container">
     <a href="{% url 'add_news' %}" class="add-news-btn">
         ➕ Добавить новость

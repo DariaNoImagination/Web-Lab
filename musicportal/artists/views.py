@@ -1,60 +1,64 @@
 from django.shortcuts import render, get_object_or_404,redirect
-from artists.models import Artist,Genre,TagPost, UploadFiles
+from artists.models import Artist,Genre,TagPost
 from django.db.models import F,Q,Value
+from django.urls import reverse_lazy
 from django.db.models.functions import Coalesce
-from django.urls import register_converter
-from .converters import  YearRangeConverter
 from .forms import  AddArtistForm
-import uuid
-
-register_converter(YearRangeConverter, 'year_range')
-
-def index(request):
-    artists  = Artist.objects.all()
-    artists_data = artists.annotate(
-        career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
-    ).order_by('-career_length')
-    data = {
-        'title': 'Музыкальные исполнители',
-        'years_range': range(1980, 2027),
-        'posts': artists_data,
-    }
-    return render(request, 'information.html',
-                  context=data)
+from django.views.generic import ListView,TemplateView
+from django.views.generic.edit import CreateView,UpdateView,DeleteView
+from datetime import datetime
+from django.contrib import messages
 
 
-def categories(request):  # Жанры
-    genres = Genre.objects.all()
-    data = {
-        'title': 'Жанры',
-        'categories': genres,
-        'app_name': 'artists'
-    }
-    return render(request, 'categories.html', context=data)
+class ArtistAll(ListView):
+    model = Artist
+    template_name = 'information.html'
+    context_object_name = 'posts'
 
+    def get_queryset(self):
+        return Artist.objects.annotate(
+            career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
+        ).order_by('-career_length')
 
-def artists_by_genre(request, genre_slug):
-    genre = get_object_or_404(Genre, slug=genre_slug)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Музыкальные исполнители'
+        context['years_range'] = range(1980, 2027)
+        return context
 
-    if not Artist.objects.filter(genre_id=genre).exists():
-        data = {
-            'title': f'В жанре {genre.title} пока нет исполнителей',
-            'posts': [],
-            'app_name': 'artists'
-        }
-        return render(request, 'information.html', context=data)
-    artists = Artist.objects.filter(genre_id=genre)
-    artists_data = artists.annotate(
-        career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
-    ).order_by('-career_length')
+class CategoriesAll(ListView):
+    model = Genre
+    template_name = 'categories.html'
+    context_object_name = 'categories'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Жанры'
+        context['app_name'] = 'artists'
+        return context
 
-    data = {
-        'title': f'Исполнители жанра {genre.title}',
-        'posts': artists_data,
-        'years_range': range(1980, 2027),
-        'app_name': 'artists'
-    }
-    return render(request, 'information.html', context=data)
+class ArtistsByGenre(ListView):
+    template_name = 'information.html'
+    context_object_name = 'posts'
+
+    def get_queryset(self):
+        self.genre = get_object_or_404(Genre, slug=self.kwargs['genre_slug'])
+
+        return Artist.objects.filter(genre_id=self.genre).annotate(
+            career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
+        ).order_by('-career_length')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if context['posts']:
+            context['title'] = f'Исполнители жанра {self.genre.title}'
+        else:
+            context['title'] = f'В жанре {self.genre.title} пока нет исполнителей'
+
+        context['years_range'] = range(1980, 2027)
+        context['app_name'] = 'artists'
+
+        return context
 
 
 def get_artists_word(count):
@@ -128,72 +132,99 @@ def artists_by_years_filter(request):
     return redirect('year_artist', years=years_dict)
 
 
-def artists_by_years(request, years):
-    start = years['start']
-    end = years['end']
-    is_present = years['is_present']
-    display = years['display']
+class ArtistsByYears(TemplateView):
+    template_name = 'information.html'
 
-    artists = Artist.objects.filter(active_from__isnull=False)
+    def dispatch(self, request, *args, **kwargs):
+        self.years = kwargs['years']
+        self.start = self.years['start']
+        self.end = self.years['end']
+        self.is_present = self.years['is_present']
+        self.display = self.years['display']
+        return super().dispatch(request, *args, **kwargs)
 
-    if is_present:
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        current_year = datetime.now().year
 
-        artists = artists.filter(
-            Q(active_from=start) &
-            Q(active_to__isnull=True)
-        )
-        title = f"Исполнители, активные с {start} года по настоящее время"
-    else:
+        artists = Artist.objects.filter(active_from__isnull=False)
 
-        artists = artists.filter(
-            Q(active_from=start) &
-            Q(active_to=end)
-        )
-
-        if start == end:
-            title = f"Исполнители, активные в {start} году"
+        if self.is_present:
+            artists = artists.filter(
+                Q(active_from=self.start) & Q(active_to__isnull=True)
+            )
+            title = f"Исполнители, активные с {self.start} года по настоящее время"
         else:
-            title = f"Исполнители, активные в период {start}-{end} годов"
+            artists = artists.filter(
+                Q(active_from=self.start) & Q(active_to=self.end)
+            )
+            if self.start == self.end:
+                title = f"Исполнители, активные в {self.start} году"
+            else:
+                title = f"Исполнители, активные в период {self.start}-{self.end} годов"
 
 
-    from datetime import datetime
-    current_year = datetime.now().year
+        artists_data = artists.annotate(
+            career_length=Coalesce(F('active_to'), Value(current_year)) - F('active_from')
+        ).order_by('-career_length')
 
 
-    artists_data = artists.annotate(
-        career_length=Coalesce(F('active_to'), Value(current_year)) - F('active_from')
-    ).order_by('-career_length')
+        for artist in artists_data:
+            artist.is_active = artist.active_to is None
+            artist.display_years = f"{artist.active_from} - {'настоящее время' if artist.is_active else artist.active_to}"
+            artist.genre_title = artist.genre.title if artist.genre else "Не указан"
 
-    for artist in artists_data:
-        artist.is_active = artist.active_to is None
-        artist.display_years = f"{artist.active_from} - {'настоящее время' if artist.is_active else artist.active_to}"
-        artist.genre_title = artist.genre.title if artist.genre else "Не указан"
+        context['title'] = title
+        context['posts'] = artists_data
+        context['start'] = self.start
+        context['end'] = self.end
+        context['is_present'] = self.is_present
+        context['display'] = self.display
+        context['total_count'] = artists_data.count()
+        context['years_range'] = range(1980, current_year + 1)
 
-    context = {
-        'title': title,
-        'posts': artists_data,
-        'start': start,
-        'end': end,
-        'is_present': is_present,
-        'display': display,
-        'total_count': len(artists_data),
-        'years_range': range(1980, current_year + 1),
-    }
-    return render(request, 'information.html', context)
+        return context
 
-def add_artist(request):
-    if request.method == 'POST':
-        form = AddArtistForm(request.POST, request.FILES)
+class AddArtist(CreateView):
+    form_class = AddArtistForm
+    template_name = 'generic_form.html'
+    success_url = reverse_lazy('all_artists')
+    extra_context = {'title': 'Добавление исполнителя','button_text': 'Добавить исполнителя'}
 
-        if form.is_valid():
-            form.save()
-            return redirect('all_artists')
-    else:
-        form = AddArtistForm()
 
-    return render(request, 'generic_form.html', {
-        'form': form,
-        'title': 'Добавление исполнителя',
-        'button_text': 'Добавить'
-    })
+class UpdateArtist(UpdateView):
+    model = Artist
+    form_class = AddArtistForm
+    template_name = 'generic_form.html'
+    extra_context = {'title': 'Редактировать исполнителя',
+                     'button_text': 'Сохранить изменения'}
+    success_url = reverse_lazy('all_artists')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_photo'] = self.object.photo if self.object.photo else None
+
+        return context
+
+
+class DeleteArtist(DeleteView):
+    model = Artist
+    template_name = 'confirm_delete.html'
+    success_url = reverse_lazy('all_artists')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.photo:
+            self.object.photo.delete()
+        messages.success(request, f'Исполнитель "{self.object.title}" успешно удалён')
+        return super().delete(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Удаление исполнителя'
+        context['object_type'] = 'исполнителя'
+        context['cancel_url'] = reverse_lazy('all_artists')
+        context['object_title'] = self.object.title
+        return context
+
 

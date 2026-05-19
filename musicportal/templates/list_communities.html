@@ -22,7 +22,18 @@
             <div class="community-footer">
                 <span class="join-link">Вступить →</span>
             </div>
+
+             <div class="edit-btn">
+                    <a href="{% url 'edit_community' community.id%}" class="edit-btn">
+            ✏️ Редактировать
+        </a>
+                </div>
+            <div class="edit-btn">
+                   <a href="{% url 'delete_community' community.id %}" class="edit-btn">
+            🗑️ Удалить
+        </a>
         </div>
+            </div>
         {% if not forloop.last %}
         <hr>
         {% endif %}

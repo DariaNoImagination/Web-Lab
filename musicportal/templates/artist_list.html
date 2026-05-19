@@ -81,6 +81,17 @@
             <p>{{ artist.content|truncatewords:30|default:"Нет описания" }}</p>
 
             <a class="detail-link">Подробнее →</a>
+            <br>
+            <br>
+             <div class="edit-artist-btn">
+                    <a href="{% url 'edit_artist' artist.id%}" class="edit-artist-btn">
+            ✏️ Редактировать
+        </a>
+                 <div class="edit-artist-btn">
+                   <a href="{% url 'delete_artist' artist.id %}" class="edit-artist-btn">
+            🗑️ Удалить
+        </a>
+                </div>
         </div>
     </li>
     {% empty %}

@@ -497,3 +497,25 @@ hr {
     color: white;
     text-decoration: none;
 }
+.edit-btn {
+    background: #48D1CC;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-block;
+        align-items: center;
+        gap: 5px;
+
+
+}
+
+  .edit-btn:hover {
+        background: #00688B;
+        transform: translateY(-2px);
+        color: white;
+    }

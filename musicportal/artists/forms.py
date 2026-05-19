@@ -1,11 +1,11 @@
 from django import forms
 from django.core.validators import MinLengthValidator, MaxLengthValidator
 from .models import Artist
-
+from django.utils.safestring import mark_safe
 
 class AddArtistForm(forms.ModelForm):
     active_from = forms.IntegerField(
-        required=False,
+        required=True,
         min_value=1900,
         max_value=2026,
         widget=forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'например: 2000'}),
@@ -32,6 +32,7 @@ class AddArtistForm(forms.ModelForm):
             'content': forms.Textarea(attrs={'cols': 60, 'rows': 10, 'class': 'form-textarea',
                                              'placeholder': 'Расскажите об исполнителе...'}),
             'tags': forms.SelectMultiple(attrs={'class': 'form-select'}),
+
         }
         labels = {
             'title': 'Имя исполнителя',
@@ -55,6 +56,10 @@ class AddArtistForm(forms.ModelForm):
             'genre': {
                 'required': 'Выберите жанр исполнителя',
             },
+            'active_from': {
+                'required': 'Пожалуйста, введите год начала карьеры исполнителя',
+
+            },
         }
 
     def __init__(self, *args, **kwargs):
@@ -71,7 +76,8 @@ class AddArtistForm(forms.ModelForm):
         # Добавляем валидаторы для имени
         self.fields['title'].validators.append(MinLengthValidator(2, message="Минимум 2 символа"))
         self.fields['title'].validators.append(MaxLengthValidator(255, message="Максимум 255 символов"))
-
+        if self.instance and self.instance.pk and self.instance.photo:
+                self.fields['photo'].widget.attrs['data-current'] = self.instance.photo.url
     def clean(self):
         cleaned_data = super().clean()
         active_from = cleaned_data.get('active_from')
@@ -101,4 +107,5 @@ class AddArtistForm(forms.ModelForm):
                     raise forms.ValidationError('Исполнитель с таким именем уже существует')
             title = ' '.join(title.split())
         return title
+
 

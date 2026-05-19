@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponse,HttpResponseNotFound,HttpResponseServerError,HttpResponseForbidden
+from django.views.generic import TemplateView
 
-def index(request):
-    return render(request, 'main.html')
+class HomePage(TemplateView):
+    template_name = 'main.html'
 
 
 def page_not_found(request, exception):
