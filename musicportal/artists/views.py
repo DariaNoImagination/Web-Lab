@@ -30,7 +30,7 @@ class ArtistAll(CareerLengthMixin, ArtistListContextMixin, ListView):
 
         if paginator:
             context['page_range'] = paginator.page_range
-        context['is_paginated'] = True
+        context['is_paginated'] = paginator.num_pages > 1
         return self.get_artist_list_context(context, 'Музыкальные исполнители')
 
 
@@ -70,7 +70,7 @@ class ArtistsByGenre(CareerLengthMixin, ArtistListContextMixin, GenreMixin, List
 
         if paginator:
             context['page_range'] = paginator.page_range
-        context['is_paginated'] = True
+        context['is_paginated'] = paginator.num_pages > 1
 
 
         if context['posts']:
@@ -114,7 +114,7 @@ class TagArtistListView(CareerLengthMixin, ArtistListContextMixin, TagMixin, Lis
 
         if paginator:
             context['page_range'] = paginator.page_range
-        context['is_paginated'] = True
+        context['is_paginated'] = paginator.num_pages > 1
 
         artists_count = self.get_queryset().count()
         title = f'{self.tag.tag} ({artists_count} {get_artists_word(artists_count)})'
@@ -220,7 +220,7 @@ class ArtistsByYears(TemplateView):
         context['years_range'] = range(1980, current_year + 1)
 
 
-        context['is_paginated'] = True
+        context['is_paginated'] = paginator.num_pages > 1
         context['page_obj'] = page_obj
         context['paginator'] = paginator
         context['page_range'] = paginator.page_range

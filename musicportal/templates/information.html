@@ -50,7 +50,7 @@
             {% for num in page_range %}
                 {% if num == page_obj.number %}
                     <strong class="current-page">{{ num }}</strong>
-                {% elif num > page_obj.number|add:'-5' and num < page_obj.number|add:'5' %}
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                     <a href="?page={{ num }}">{{ num }}</a>
                 {% endif %}
             {% endfor %}
@@ -63,6 +63,5 @@
     </span>
 </div>
 {% endif %}
-
 <link rel="stylesheet" type="text/css" href="{% static 'css/pagination.css' %}">
 {% endblock %}

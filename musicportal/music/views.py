@@ -98,7 +98,7 @@ class FilterMusicView(TemplateView):
         context['selected_year'] = self.year
 
 
-        context['is_paginated'] = True
+        context['is_paginated'] = paginator.num_pages > 1
         context['page_obj'] = page_obj
         context['paginator'] = paginator
         context['page_range'] = paginator.page_range
@@ -157,7 +157,7 @@ class AboutMusic(TemplateView):
         context['title'] = 'Каталог музыки'
 
 
-        context['is_paginated'] = True
+        context['is_paginated'] = paginator.num_pages > 1
         context['page_obj'] = page_obj
         context['paginator'] = paginator
         context['page_range'] = paginator.page_range

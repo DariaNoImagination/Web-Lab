@@ -13,6 +13,9 @@ urlpatterns = [
     path('reviews/', include('reviews.urls')),
     path('music/', include('music.urls')),
     path('userprofile/<str:username>/', include('userprofile.urls')),
+    path('users/', include('users.urls',
+    namespace="users")),
+
 
 ]
 

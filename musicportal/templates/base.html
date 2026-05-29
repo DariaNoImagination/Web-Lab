@@ -13,13 +13,27 @@
     <div class="header">
         <ul class="mainmenu">
             <li class="logo"><a href="{% url 'main' %}"><div class="logo"></div></a></li>
-            <li><a href="{% url 'main' %}">Главная</a></li>
-            <li><a href="{% url 'all_artists' %}">Исполнители</a></li>
-            <li><a href="{% url 'all_news' %}">Новости</a></li>
-            <li><a href="{% url 'all_communities' %}">Сообщества</a></li>
-            <li><a href="{% url 'all_music' %}">Каталог музыки</a></li>
-            <li><a href="{% url 'all_reviews' %}">Рецензии</a></li>
-            <li class="last"><a href="{% url 'profile' username='username' %}">Профиль</a></li>
+            {% for item in mainmenu %}
+            <li>
+                <a href="{% url item.url_name %}">{{ item.title }}</a>
+            </li>
+            {% endfor %}
+            {% if user.is_authenticated %}
+            <li class="last">
+            <a href="{% url 'profile' username=user.username %}">Профиль {{ user.username }}</a> |
+            <a href="{% url 'users:logout' %}">Выйти</a>
+            </li>
+            {% else %}
+             <li class="last">
+                 <a href="{% url 'users:login' %}">Войти</a> |
+                 <a href="#">Регистрация</a>
+    </li>
+{% endif %}
+
+ </ul>
+ <div class="clear"></div>
+ </div>
+
         </ul>
     </div>
     <div class="content">

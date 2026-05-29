@@ -16,6 +16,7 @@ SECRET_KEY = 'django-insecure-uh_5s1$&bfi5x#f_b$&o*@h%o5j#@wgp#l@d261l+--ek$gl=1
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1']
+LOGOUT_REDIRECT_URL = 'main'
 
 
 # Application definition
@@ -35,6 +36,8 @@ INSTALLED_APPS = [
     'music.apps.MusicConfig',
     'userprofile.apps.UserprofileConfig',
     'homepage.apps.HomepageConfig',
+     "users.apps.UsersConfig",
+
 
 ]
 
@@ -60,6 +63,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'homepage.context_processors.get_menu_context',
             ],
         },
     },
@@ -108,6 +112,9 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
+
+
 
 MEDIA_ROOT = BASE_DIR / 'media'
 # Static files (CSS, JavaScript, Images)

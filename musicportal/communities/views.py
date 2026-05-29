@@ -25,7 +25,7 @@ class CommunityAll(ListView):
 
         if paginator:
             context['page_range'] = paginator.page_range
-        context['is_paginated'] = True
+        context['is_paginated'] = paginator.num_pages > 1
 
         return context
 

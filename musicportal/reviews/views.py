@@ -26,7 +26,7 @@ class ReviewsAll(BaseReviewsMixin, ListView):
 
         if paginator:
             context['page_range'] = paginator.page_range
-        context['is_paginated'] = True
+        context['is_paginated'] = paginator.num_pages > 1
         reviews = context['posts']
         self.add_comments_to_reviews(reviews, limit=5)
 
@@ -65,7 +65,7 @@ class ReviewsByGenreView(BaseReviewsMixin, TemplateView):
 
         if paginator:
             context['page_range'] = paginator.page_range
-        context['is_paginated'] = True
+        context['is_paginated'] = paginator.num_pages > 1
 
         return context
 

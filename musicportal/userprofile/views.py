@@ -7,23 +7,23 @@ from communities.models import Community
 from django.views.generic.edit import UpdateView,DeleteView
 from django.urls import reverse_lazy
 
-# userprofile/views.py
+
 class UserProfile(TemplateView):
     template_name = 'profile.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Получаем все записи из БД
+
         all_artists = list(Artist.objects.all())
         all_songs = list(Song.objects.select_related('artist', 'album').all())
         all_reviews = list(Review.objects.select_related('song', 'album').all())
         all_communities = list(Community.objects.all())
 
-        # Любимые исполнители
+
         artists = all_artists[2], all_artists[7], all_artists[6]
 
-        # Формируем любимых исполнителей с их песнями
+
         favorite_artists = []
         favorite_songs = []
         for artist in artists:

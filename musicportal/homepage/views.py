@@ -14,3 +14,4 @@ def server_error(request):
 
 def permission_denied(request, exception):
     return HttpResponseForbidden('<h1>Доступ к ресурсу запрещен</h1>')
+
