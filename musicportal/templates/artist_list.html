@@ -46,26 +46,17 @@
 <ul class="artist-list">
     {% for artist in posts %}
     <li class="artist-item">
-        {# Картинка #}
-
+        <div class="artist-photo-container">
             {% if artist.photo %}
                 <img class="artist-thumb" src="{{ artist.photo.url }}" alt="{{ artist.title }}">
             {% else %}
                 <div class="no-photo">🎤</div>
             {% endif %}
-
+        </div>
 
         <div class="artist-info">
             <h2>{{ artist.title }}</h2>
-
-            <p><strong>Жанр:</strong>
-                {% if artist.genre %}
-                    {{ artist.genre.title }}
-                {% else %}
-                    Не указан
-                {% endif %}
-            </p>
-
+            <p><strong>Жанр:</strong> {{ artist.genre.title|default:"Не указан" }}</p>
             <p><strong>Годы активности:</strong>
                 {% if artist.active_to %}
                     {{ artist.active_from }} - {{ artist.active_to }}
@@ -73,25 +64,13 @@
                     {{ artist.active_from }} - настоящее время
                 {% endif %}
             </p>
-
             {% if artist.career_length %}
             <p><strong>Длительность карьеры:</strong> {{ artist.career_length }} лет</p>
             {% endif %}
+            <p>{{ artist.content|truncatewords:15|default:"Нет описания" }}</p>
 
-            <p>{{ artist.content|truncatewords:30|default:"Нет описания" }}</p>
-
-            <a class="detail-link">Подробнее →</a>
-            <br>
-            <br>
-             <div class="edit-artist-btn">
-                    <a href="{% url 'edit_artist' artist.id%}" class="edit-artist-btn">
-            ✏️ Редактировать
-        </a>
-                 <div class="edit-artist-btn">
-                   <a href="{% url 'delete_artist' artist.id %}" class="edit-artist-btn">
-            🗑️ Удалить
-        </a>
-                </div>
+            <a href="{% url 'artist_detail' artist.id %}" class="detail-link">Подробнее→</a>
+            <br />
         </div>
     </li>
     {% empty %}
@@ -99,22 +78,19 @@
     {% endfor %}
 </ul>
 
-<div class="add-artist-btn-container">
-    <a href="{% url 'add_artist' %}" class="add-artist-btn">
-        ➕ Добавить исполнителя
-    </a>
-</div>
-
 <!-- Sidebar слева -->
 <div class="left-chapters">
     <ul id="leftchapters">
         <li>{% show_all_tags %}</li>
     </ul>
 </div>
-
-<div class="content">
-    {% block content %}
-    {% endblock %}
+<!-- Конец Sidebar'а -->
+<br>
+<div class="add-artist-btn-container">
+    <a href="{% url 'add_artist' %}" class="add-artist-btn">
+        ➕ Добавить исполнителя
+    </a>
 </div>
+
 
 <link rel="stylesheet" type="text/css" href="{% static 'artists/css/artists_style.css' %}">

@@ -1,0 +1,83 @@
+.pagination {
+    margin-top: 30px;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.step-links a, .step-links strong {
+    display: inline-block;
+    margin: 0 5px;
+    padding: 8px 12px;
+    background: #48D1CC;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+.step-links a:hover {
+    background: #00688B;
+    transform: translateY(-2px);
+}
+
+.current {
+    margin: 0 10px;
+    padding: 8px 12px;
+    background: #00688B;
+    color: white;
+    border-radius: 5px;
+}
+
+.page-numbers {
+    margin: 0 10px;
+}
+
+.page-numbers a, .page-numbers strong {
+    display: inline-block;
+    margin: 0 3px;
+    padding: 6px 10px;
+    background: #f0f0f0;
+    color: #00688B;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.page-numbers strong.current-page {
+    background: #48D1CC;
+    color: white;
+}
+
+.page-numbers a:hover {
+    background: #48D1CC;
+    color: white;
+}
+
+.reviews-nav {
+    display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        justify-content: center;
+}
+
+.reviews-nav a {
+      background: white;
+        color: #00688B;
+        text-decoration: none;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 1px solid #48D1CC;
+}
+
+.reviews-nav a:hover {
+     background: #48D1CC;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,206,209,0.3);
+}
+
+
+

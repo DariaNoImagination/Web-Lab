@@ -93,7 +93,7 @@
         box-shadow: 0 4px 12px rgba(0,206,209,0.3);
     }
 
-    /* Year Filter - в стиле artist-item */
+
     .year-filter {
         background: white;
         padding: 20px;
@@ -241,42 +241,15 @@
     }
 
 
-    @media (max-width: 600px) {
-        .year-form {
-            flex-direction: column;
-            gap: 10px;
-        }
+}
+.add-artist-btn-container {
+    text-align: center;
+    margin: 30px 0 20px;
+}
 
-        .styled-select select {
-            min-width: 180px;
-        }
-
-        .separator {
-            transform: rotate(90deg);
-        }
-
-        .checkbox-label {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .filter-submit {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .filter-links {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .filter-links a {
-            width: 100%;
-            text-align: center;
-        }
-    }
-    .add-artist-btn {
-   background: #48D1CC;
+.add-artist-btn {
+    display: inline-block;
+    background: #48D1CC;
     color: white;
     border: none;
     padding: 10px 24px;
@@ -284,40 +257,18 @@
     font-weight: 600;
     border-radius: 25px;
     cursor: pointer;
+    text-decoration: none;
     transition: all 0.2s;
-    display: inline-block;
-    align-items: center;
-    justify-content: center;
-    width: 200;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    width: auto;
+    min-width: 180px;
+    text-align: center;
 }
 
-  .add-artist-btn:hover {
-        background: #00688B;
-        transform: translateY(-2px);
-        color: white;
-    }
-  .edit-artist-btn {
-    background: #48D1CC;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        font-size: 14px;
-        font-weight: 600;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-block;
-        align-items: center;
-        gap: 5px;
-
-
+.add-artist-btn:hover {
+    background: #00688B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,104,139,0.3);
+    color: white;
 }
-
-  .edit-artist-btn:hover {
-        background: #00688B;
-        transform: translateY(-2px);
-        color: white;
-    }
 </style>

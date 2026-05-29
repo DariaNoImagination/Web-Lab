@@ -119,5 +119,30 @@
         transform: translateY(-2px);
         color: white;
     }
+  .nav {
+    display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        justify-content: center;
+}
+
+.nav a {
+      background: white;
+        color: #00688B;
+        text-decoration: none;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 1px solid #48D1CC;
+}
+
+.nav a:hover {
+     background: #48D1CC;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,206,209,0.3);
+}
 
 </style>

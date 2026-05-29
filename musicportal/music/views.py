@@ -6,15 +6,23 @@ from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView,UpdateView,DeleteView
 from django.urls import reverse_lazy
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+
 class FilterMusicView(TemplateView):
     template_name = 'music.html'
+    paginate_by = 10
 
     def get(self, request, *args, **kwargs):
         self.genre_slug = request.GET.get('genre')
         self.content_type = request.GET.get('content_type')
         self.year = request.GET.get('year')
+        self.page_number = request.GET.get('page', 1)
 
-        return super().get(request, *args, **kwargs)
+        context = self.get_context_data(**kwargs)
+        response = self.render_to_response(context)
+        response['Content-Type'] = 'text/html; charset=utf-8'
+        return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -35,6 +43,31 @@ class FilterMusicView(TemplateView):
             except ValueError:
                 pass
 
+        if self.content_type == 'song':
+            albums = Album.objects.none()
+        elif self.content_type == 'album':
+            songs = Song.objects.none()
+
+
+        combined_list = list(songs) + list(albums)
+        combined_list.sort(key=lambda x: getattr(x, 'year', 0), reverse=True)
+
+
+        paginator = Paginator(combined_list, self.paginate_by)
+        try:
+            page_obj = paginator.page(self.page_number)
+        except (PageNotAnInteger, EmptyPage):
+            page_obj = paginator.page(1)
+
+
+        paginated_songs = []
+        paginated_albums = []
+        for item in page_obj:
+            if hasattr(item, 'songs_count'):
+                paginated_albums.append(item)
+            else:
+                paginated_songs.append(item)
+
         high_rated_songs_by_album = None
         if self.content_type != 'song':
             high_rated_songs_by_album = songs.filter(
@@ -49,17 +82,12 @@ class FilterMusicView(TemplateView):
         new_song = Song.objects.select_related('artist').order_by('-year').first()
         new_album = Album.objects.select_related('artist').order_by('-year').first()
 
-        if self.content_type == 'song':
-            albums = Album.objects.none()
-        elif self.content_type == 'album':
-            songs = Song.objects.none()
-
         genres = Genre.objects.all()
         current_year = 2026
         years_range = range(1980, current_year + 1)
 
-        context['songs'] = songs
-        context['albums'] = albums
+        context['songs'] = paginated_songs
+        context['albums'] = paginated_albums
         context['newest_song'] = new_song
         context['newest_album'] = new_album
         context['high_rated_songs_by_album'] = high_rated_songs_by_album
@@ -68,30 +96,71 @@ class FilterMusicView(TemplateView):
         context['selected_genre'] = self.genre_slug
         context['selected_type'] = self.content_type
         context['selected_year'] = self.year
+
+
+        context['is_paginated'] = True
+        context['page_obj'] = page_obj
+        context['paginator'] = paginator
+        context['page_range'] = paginator.page_range
+
+
+
         return context
 
 
 class AboutMusic(TemplateView):
     template_name = 'music.html'
+    paginate_by = 10
+
+    def get(self, request, *args, **kwargs):
+        self.page_number = request.GET.get('page', 1)
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         songs = Song.objects.select_related('artist', 'genre', 'album').all()
         albums = Album.objects.select_related('artist', 'genre').all()
+
+
+        combined_list = list(songs) + list(albums)
+        combined_list.sort(key=lambda x: getattr(x, 'year', 0), reverse=True)
+
+      
+        paginator = Paginator(combined_list, self.paginate_by)
+        try:
+            page_obj = paginator.page(self.page_number)
+        except (PageNotAnInteger, EmptyPage):
+            page_obj = paginator.page(1)
+
+
+        paginated_songs = []
+        paginated_albums = []
+        for item in page_obj:
+            if hasattr(item, 'songs_count'):
+                paginated_albums.append(item)
+            else:
+                paginated_songs.append(item)
+
         current_year = 2026
         years_range = range(1980, current_year + 1)
         new_song = Song.objects.order_by("-year").first()
         new_album = Album.objects.latest("year")
         genres = Genre.objects.all()
 
-        context['songs'] = songs
-        context['albums'] = albums
+        context['songs'] = paginated_songs
+        context['albums'] = paginated_albums
         context['years_range'] = years_range
         context['genres'] = genres
         context['newest_song'] = new_song
         context['newest_album'] = new_album
         context['title'] = 'Каталог музыки'
+
+
+        context['is_paginated'] = True
+        context['page_obj'] = page_obj
+        context['paginator'] = paginator
+        context['page_range'] = paginator.page_range
 
         return context
 

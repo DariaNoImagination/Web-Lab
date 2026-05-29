@@ -1,16 +1,35 @@
 from django.urls import reverse_lazy
 from .forms import AddCommunityForm
-from django.views.generic import TemplateView
+from django.views.generic import ListView
 from django.views.generic.edit import CreateView, UpdateView,DeleteView
 
 from .models import Community
 
 
-class CommunityAll(TemplateView):
+class CommunityAll(ListView):
+    model = Community
     template_name = 'information.html'
-    extra_context = {
-        'title': 'Сообщества фанатов',
-     }
+    context_object_name = 'posts'
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Community.objects.all().order_by('-members')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Сообщества фанатов'
+        context['app_name'] = 'communities'
+
+        page_obj = context.get('page_obj')
+        paginator = context.get('paginator')
+
+        if paginator:
+            context['page_range'] = paginator.page_range
+        context['is_paginated'] = True
+
+        return context
+
+
 
 class AddCommunity(CreateView):
     form_class = AddCommunityForm
@@ -40,6 +59,7 @@ class DeleteCommunity(DeleteView):
         context['title'] = 'Удаление сообщества'
         context['object_type'] = 'сообщество'
         context['object_title'] = self.object.club_name
+        context['cancel_url'] = reverse_lazy('all_communities')
         return context
 
 

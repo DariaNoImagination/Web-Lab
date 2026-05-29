@@ -96,11 +96,13 @@
     {% empty %}
     <p>Нет доступных рецензий</p>
     {% endfor %}
-    <div class="add-review-btn">
+    <br>
+</div>
+<div class="add-review-btn">
                 <a href="{% url 'add_review'%}" class="add-review-btn">
-            Добавить рецензию
+            ➕Добавить рецензию
         </a>
     </div>
-</div>
+
 
 <link rel="stylesheet" type="text/css" href="{% static 'reviews/css/reviews_style.css' %}">

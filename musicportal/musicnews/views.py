@@ -18,10 +18,17 @@ class NewsAll(ListView):
     model = News
     template_name = 'news.html'
     context_object_name = 'news'
+    paginate_by = 10
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Все новости музыки'
         context['show_all'] = True
+        page_obj = context.get('page_obj')
+        paginator = context.get('paginator')
+
+        if paginator:
+            context['page_range'] = paginator.page_range
+        context['is_paginated'] = True
         return context
 
 
@@ -37,7 +44,7 @@ class NewsByCategoryView(ListView):
     model = News
     template_name = 'news.html'
     context_object_name = 'news'
-
+    paginate_by = 10
     def dispatch(self, request, *args, **kwargs):
         self.category_slug = kwargs['category_slug']
         self.category_name = category_names.get(self.category_slug, self.category_slug)
@@ -54,6 +61,12 @@ class NewsByCategoryView(ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = f'Новости: {self.category_name}'
         context['category_slug'] = self.category_slug
+        page_obj = context.get('page_obj')
+        paginator = context.get('paginator')
+
+        if paginator:
+            context['page_range'] = paginator.page_range
+        context['is_paginated'] = True
         return context
 
 

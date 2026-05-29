@@ -1,64 +1,84 @@
-from django.shortcuts import render, get_object_or_404,redirect
-from artists.models import Artist,Genre,TagPost
-from django.db.models import F,Q,Value
+from django.shortcuts import  redirect
+from artists.models import Artist, Genre
+from django.db.models import F, Q, Value
 from django.urls import reverse_lazy
 from django.db.models.functions import Coalesce
-from .forms import  AddArtistForm
-from django.views.generic import ListView,TemplateView
-from django.views.generic.edit import CreateView,UpdateView,DeleteView
+from .forms import AddArtistForm
+from django.views.generic import ListView, TemplateView, DetailView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views import View
 from datetime import datetime
-from django.contrib import messages
+from .utils import (
+    CareerLengthMixin, ArtistListContextMixin,
+    ArtistDetailContextMixin,GenreMixin,TagMixin)
+from django.core.paginator import Paginator
 
 
-class ArtistAll(ListView):
+class ArtistAll(CareerLengthMixin, ArtistListContextMixin, ListView):
     model = Artist
     template_name = 'information.html'
     context_object_name = 'posts'
+    paginate_by = 10
 
     def get_queryset(self):
-        return Artist.objects.annotate(
-            career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
-        ).order_by('-career_length')
+        return self.get_queryset_with_career_length(Artist.objects.all())
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Музыкальные исполнители'
-        context['years_range'] = range(1980, 2027)
-        return context
+        page_obj = context.get('page_obj')
+        paginator = context.get('paginator')
+
+        if paginator:
+            context['page_range'] = paginator.page_range
+        context['is_paginated'] = True
+        return self.get_artist_list_context(context, 'Музыкальные исполнители')
+
+
 
 class CategoriesAll(ListView):
     model = Genre
     template_name = 'categories.html'
     context_object_name = 'categories'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Жанры'
         context['app_name'] = 'artists'
         return context
 
-class ArtistsByGenre(ListView):
+
+class ArtistsByGenre(CareerLengthMixin, ArtistListContextMixin, GenreMixin, ListView):
     template_name = 'information.html'
     context_object_name = 'posts'
+    paginate_by = 10
+
+    def dispatch(self, request, *args, **kwargs):
+        self.genre = self.get_genre(kwargs['genre_slug'])
+        return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        self.genre = get_object_or_404(Genre, slug=self.kwargs['genre_slug'])
-
-        return Artist.objects.filter(genre_id=self.genre).annotate(
-            career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
-        ).order_by('-career_length')
+        queryset = Artist.objects.filter(genre_id=self.genre)
+        return self.get_queryset_with_career_length(queryset)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+
+        page_obj = context.get('page_obj')
+        paginator = context.get('paginator')
+
+
+        if paginator:
+            context['page_range'] = paginator.page_range
+        context['is_paginated'] = True
+
+
         if context['posts']:
-            context['title'] = f'Исполнители жанра {self.genre.title}'
+            title = f'Исполнители жанра {self.genre.title}'
         else:
-            context['title'] = f'В жанре {self.genre.title} пока нет исполнителей'
+            title = f'В жанре {self.genre.title} пока нет исполнителей'
 
-        context['years_range'] = range(1980, 2027)
-        context['app_name'] = 'artists'
-
-        return context
+        return self.get_artist_list_context(context, title)
 
 
 def get_artists_word(count):
@@ -71,65 +91,77 @@ def get_artists_word(count):
     else:
         return "исполнителей"
 
-def show_tag_artistlist(request, tag_slug):
-    tag = get_object_or_404(TagPost, slug=tag_slug)
-    artists = tag.artists
-    artists_data = artists.annotate(
-        career_length=Coalesce(F('active_to'), Value(2026)) - F('active_from')
-    ).order_by('-career_length')
-    artists_count = artists.count()
-    data = {
-        'title': f'{tag.tag} ({artists_count} {get_artists_word(artists_count)})',
-        'posts': artists_data,
-        'app_name': 'artists'
-     }
-    return render(request, 'information.html', context=data)
+
+class TagArtistListView(CareerLengthMixin, ArtistListContextMixin, TagMixin, ListView):
+    template_name = 'information.html'
+    context_object_name = 'posts'
+    paginate_by = 10
+
+    def dispatch(self, request, *args, **kwargs):
+        self.tag = self.get_tag(kwargs['tag_slug'])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return self.get_queryset_with_career_length(self.tag.artists.all())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
 
-def artists_by_years_filter(request):
-    start_year = request.GET.get('start_year')
-    end_year = request.GET.get('end_year')
-    to_present = request.GET.get('to_present') == 'true'
+        page_obj = context.get('page_obj')
+        paginator = context.get('paginator')
 
 
-    if not start_year:
-        return redirect('all_artists')
+        if paginator:
+            context['page_range'] = paginator.page_range
+        context['is_paginated'] = True
 
-    try:
-        start_year = int(start_year)
-    except (ValueError, TypeError):
-        return redirect('all_artists')
+        artists_count = self.get_queryset().count()
+        title = f'{self.tag.tag} ({artists_count} {get_artists_word(artists_count)})'
+
+        return self.get_artist_list_context(context, title)
 
 
-    if not end_year:
-        to_present = True
-    else:
+class ArtistsByYearsFilterView(View):
+    def get(self, request):
+        start_year = request.GET.get('start_year')
+        end_year = request.GET.get('end_year')
+        to_present = request.GET.get('to_present') == 'true'
+
+        if not start_year:
+            return redirect('all_artists')
+
         try:
-            end_year = int(end_year)
-
-            if end_year == start_year:
-                to_present = True
+            start_year = int(start_year)
         except (ValueError, TypeError):
+            return redirect('all_artists')
+
+        if not end_year:
             to_present = True
+        else:
+            try:
+                end_year = int(end_year)
+                if end_year == start_year:
+                    to_present = True
+            except (ValueError, TypeError):
+                to_present = True
 
+        if to_present:
+            years_dict = {
+                'start': start_year,
+                'end': None,
+                'is_present': True,
+                'display': f'{start_year}-present'
+            }
+        else:
+            years_dict = {
+                'start': start_year,
+                'end': end_year,
+                'is_present': False,
+                'display': f'{start_year}-{end_year}'
+            }
 
-    if to_present:
-        years_dict = {
-            'start': start_year,
-            'end': None,
-            'is_present': True,
-            'display': f'{start_year}-present'
-        }
-    else:
-        years_dict = {
-            'start': start_year,
-            'end': end_year,
-            'is_present': False,
-            'display': f'{start_year}-{end_year}'
-        }
-
-
-    return redirect('year_artist', years=years_dict)
+        return redirect('year_artist', years=years_dict)
 
 
 class ArtistsByYears(TemplateView):
@@ -141,6 +173,7 @@ class ArtistsByYears(TemplateView):
         self.end = self.years['end']
         self.is_present = self.years['is_present']
         self.display = self.years['display']
+        self.page_number = request.GET.get('page', 1)
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -163,19 +196,22 @@ class ArtistsByYears(TemplateView):
             else:
                 title = f"Исполнители, активные в период {self.start}-{self.end} годов"
 
-
         artists_data = artists.annotate(
             career_length=Coalesce(F('active_to'), Value(current_year)) - F('active_from')
         ).order_by('-career_length')
 
 
-        for artist in artists_data:
+        paginator = Paginator(artists_data, 10)
+        page_obj = paginator.get_page(self.page_number)
+
+
+        for artist in page_obj:
             artist.is_active = artist.active_to is None
             artist.display_years = f"{artist.active_from} - {'настоящее время' if artist.is_active else artist.active_to}"
             artist.genre_title = artist.genre.title if artist.genre else "Не указан"
 
         context['title'] = title
-        context['posts'] = artists_data
+        context['posts'] = page_obj
         context['start'] = self.start
         context['end'] = self.end
         context['is_present'] = self.is_present
@@ -183,27 +219,31 @@ class ArtistsByYears(TemplateView):
         context['total_count'] = artists_data.count()
         context['years_range'] = range(1980, current_year + 1)
 
+
+        context['is_paginated'] = True
+        context['page_obj'] = page_obj
+        context['paginator'] = paginator
+        context['page_range'] = paginator.page_range
+
         return context
 
 class AddArtist(CreateView):
     form_class = AddArtistForm
     template_name = 'generic_form.html'
     success_url = reverse_lazy('all_artists')
-    extra_context = {'title': 'Добавление исполнителя','button_text': 'Добавить исполнителя'}
+    extra_context = {'title': 'Добавление исполнителя', 'button_text': 'Добавить исполнителя'}
 
 
 class UpdateArtist(UpdateView):
     model = Artist
     form_class = AddArtistForm
     template_name = 'generic_form.html'
-    extra_context = {'title': 'Редактировать исполнителя',
-                     'button_text': 'Сохранить изменения'}
+    extra_context = {'title': 'Редактировать исполнителя', 'button_text': 'Сохранить изменения'}
     success_url = reverse_lazy('all_artists')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['current_photo'] = self.object.photo if self.object.photo else None
-
         return context
 
 
@@ -216,7 +256,6 @@ class DeleteArtist(DeleteView):
         self.object = self.get_object()
         if self.object.photo:
             self.object.photo.delete()
-        messages.success(request, f'Исполнитель "{self.object.title}" успешно удалён')
         return super().delete(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -228,3 +267,17 @@ class DeleteArtist(DeleteView):
         return context
 
 
+class ArtistDetailView(ArtistDetailContextMixin, DetailView):
+    model = Artist
+    template_name = 'artist_detail.html'
+    context_object_name = 'artist'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        artist = self.object
+
+        context = self.add_career_info(context, artist)
+        context = self.add_songs_and_albums(context, artist)
+        context['title'] = artist.title
+
+        return context

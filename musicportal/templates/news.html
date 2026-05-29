@@ -3,11 +3,12 @@
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
 <p>
-
-    <a href="{% url 'all_news' %}"> Все новости</a> |
-    <a href="{% url 'category' 'events' %}">Концерты</a> |
-    <a href="{% url 'category' 'awards' %}">Премии</a> |
+<div class="nav">
+    <a href="{% url 'all_news' %}"> Все новости</a>
+    <a href="{% url 'category' 'events' %}">Концерты</a>
+    <a href="{% url 'category' 'awards' %}">Премии</a> 
     <a href="{% url 'category' 'new' %}">Новинки</a>
+    </div>
     </p>
     <h1>{{ title }}</h1>
 
@@ -30,9 +31,7 @@
 
         <p class="news-date">{{ item.created_at|date:"d.m.Y" }}</p>
 
-        <div class="news-footer">
-            <span class="read-more">Подробнее →</span>
-        </div>
+
 
        <div class="edit-btn">
                     <a href="{% url 'edit_news' item.id %}" class="edit-btn">
@@ -50,10 +49,41 @@
 {% else %}
 <p class="no-news">Нет новостей в этой категории </p>
 {% endif %}
+<br>
 <div class="add-news-btn-container">
     <a href="{% url 'add_news' %}" class="add-news-btn">
         ➕ Добавить новость
     </a>
 </div>
+{% if is_paginated %}
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; Первая</a>
+            <a href="?page={{ page_obj.previous_page_number }}">Назад</a>
+        {% endif %}
+
+        <span class="current">
+            Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+        </span>
+
+        <span class="page-numbers">
+            {% for num in page_range %}
+                {% if num == page_obj.number %}
+                    <strong class="current-page">{{ num }}</strong>
+                {% elif num > page_obj.number|add:'-5' and num < page_obj.number|add:'5' %}
+                    <a href="?page={{ num }}">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Вперед</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">Последняя &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+{% endif %}
 <link rel="stylesheet" type="text/css" href="{% static 'musicnews/css/news_style.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/pagination.css' %}">
 {% endblock %}

@@ -1,20 +1,27 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ title }}{% endblock %}
 
+
 {% block content %}
 <h1>{{ title }}</h1>
+ {% if app_name == 'artists' %}
+<a href="{% url 'all_artists' %}" class="back-btn">← Назад к списку всех исполнителей</a>
+{% elif app_name == 'reviews' %}
+<a href="{% url 'all_reviews' %}" class="back-btn">← Назад к списку всех рецензий</a>
+{% endif %}
 <ul>
     {% for c in categories %}
     <li>
         <h2>
             {% if app_name == 'artists' %}
                 <a href="{{ c.get_absolute_url }}">
-                    {{ c.title }}
+                   <div class="category">  {{ c.title }} </div>
                 </a>
             {% elif app_name == 'reviews' %}
                 <a href="{% url 'genre_reviews' genre_slug=c.slug|lower %}">
-                    {{ c.title }}
+                    <div class="category"> {{ c.title }} </div>
                 </a>
             {% else %}
                 {{ c.title }}
@@ -23,4 +30,5 @@
     </li>
     {% endfor %}
 </ul>
+<link rel="stylesheet" type="text/css" href="{% static 'artists/css/category.css' %}">
 {% endblock %}
