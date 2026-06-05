@@ -4,7 +4,7 @@
     <div class="review-card">
         <div class="review-header">
             <span class="review-category">
-                {# Поддержка и объектов, и словарей #}
+
                 {% if review.song %}
                     🎵 Песня
                 {% elif review.album %}
@@ -22,7 +22,7 @@
         </div>
 
         <h3 class="review-title">
-            {# Объекты #}
+
             {% if review.song %}
                 {{ review.song.title }}
             {% elif review.album %}
@@ -37,18 +37,19 @@
                 {{ review.album__title }}
             {% endif %}
         </h3>
-
+        {% if review.author %}
+        <p><strong>Автор:</strong> {{ review.author }}</p>
+        {% else %}
+        <p><strong>Автор:</strong> не известен </p>
+        {% endif %}
         <p class="review-artist">
             <strong>Исполнитель:</strong>
-            {# Объекты #}
             {% if review.song %}
                 {{ review.song.artist.title }}
             {% elif review.album %}
                 {{ review.album.artist.title }}
-            {# Словари с аннотациями #}
             {% elif review.artist_name %}
                 {{ review.artist_name }}
-            {# Простые словари #}
             {% elif review.song__artist__title %}
                 {{ review.song__artist__title }}
             {% elif review.album__artist_id__title %}
@@ -75,9 +76,6 @@
                 <strong>{{ comment.author }}</strong>
                 <small>{{ comment.created_at|date:"d.m.Y H:i" }}</small>
                 <p>{{ comment.text }} </p>
-                {% if comment.rating %}
-                <p> Оценка: {{ comment.rating }} </p>
-                {% endif %}
             </div>
             {% empty %}
             <p>Нет комментариев</p>

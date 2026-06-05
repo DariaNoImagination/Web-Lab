@@ -1,5 +1,3 @@
-
-
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -16,10 +14,13 @@ SECRET_KEY = 'django-insecure-uh_5s1$&bfi5x#f_b$&o*@h%o5j#@wgp#l@d261l+--ek$gl=1
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1']
-LOGOUT_REDIRECT_URL = 'main'
 
-
+AUTHENTICATION_BACKENDS = [
+ 'django.contrib.auth.backends.ModelBackend',
+ 'users.authentication.EmailAuthBackend',
+]
 # Application definition
+AUTH_USER_MODEL = 'users.CustomUser'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -34,9 +35,9 @@ INSTALLED_APPS = [
     'communities.apps.CommunitiesConfig',
     'reviews.apps.ReviewsConfig',
     'music.apps.MusicConfig',
-    'userprofile.apps.UserprofileConfig',
     'homepage.apps.HomepageConfig',
-     "users.apps.UsersConfig",
+     'users.apps.UsersConfig',
+     'userprofile.apps.UserprofileConfig',
 
 
 ]
@@ -113,7 +114,17 @@ USE_I18N = True
 
 USE_TZ = True
 
-
+EMAIL_HOST = "smtp.yandex.ru"
+EMAIL_PORT = 465
+EMAIL_HOST_USER = "dasha.osintseva.01@yandex.ru"
+LOGOUT_REDIRECT_URL = 'main'
+LOGIN_URL = 'users:login'
+EMAIL_HOST_PASSWORD = "ppwpvmgstzequmwe"
+EMAIL_USE_SSL = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+EMAIL_ADMIN = EMAIL_HOST_USER
+EMAIL_BACKEND ="django.core.mail.backends.smtp.EmailBackend"
 
 
 MEDIA_ROOT = BASE_DIR / 'media'

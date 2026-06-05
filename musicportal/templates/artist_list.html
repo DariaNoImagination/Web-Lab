@@ -55,22 +55,35 @@
         </div>
 
         <div class="artist-info">
-            <h2>{{ artist.title }}</h2>
-            <p><strong>Жанр:</strong> {{ artist.genre.title|default:"Не указан" }}</p>
-            <p><strong>Годы активности:</strong>
-                {% if artist.active_to %}
-                    {{ artist.active_from }} - {{ artist.active_to }}
-                {% else %}
-                    {{ artist.active_from }} - настоящее время
+            <div class="artist-top">
+                <h2>{{ artist.title }}</h2>
+                <p><strong>Жанр:</strong> {{ artist.genre.title|default:"Не указан" }}</p>
+                <p><strong>Годы активности:</strong>
+                    {% if artist.active_to %}
+                        {{ artist.active_from }} - {{ artist.active_to }}
+                    {% else %}
+                        {{ artist.active_from }} - настоящее время
+                    {% endif %}
+                </p>
+                {% if artist.career_length %}
+                <p><strong>Длительность карьеры:</strong> {{ artist.career_length }} лет</p>
                 {% endif %}
-            </p>
-            {% if artist.career_length %}
-            <p><strong>Длительность карьеры:</strong> {{ artist.career_length }} лет</p>
-            {% endif %}
-            <p>{{ artist.content|truncatewords:15|default:"Нет описания" }}</p>
+                <p>{{ artist.content|truncatewords:15|default:"Нет описания" }}</p>
+                <a href="{% url 'artist_detail' artist.id %}" class="detail-link">Подробнее→</a>
+            </div>
 
-            <a href="{% url 'artist_detail' artist.id %}" class="detail-link">Подробнее→</a>
-            <br />
+            <div class="artist-bottom">
+                {% if user.is_authenticated %}
+                <form method="post" action="{% url 'userprofile:toggle_favorite_artist' artist.id %}" class="favorite-form">
+                    {% csrf_token %}
+                    {% if artist in user.favorite_artists.all %}
+                        <button type="submit" class="favorite-btn active">❤️ В избранном</button>
+                    {% else %}
+                        <button type="submit" class="favorite-btn">🤍 В избранное</button>
+                    {% endif %}
+                </form>
+                {% endif %}
+            </div>
         </div>
     </li>
     {% empty %}
@@ -84,13 +97,55 @@
         <li>{% show_all_tags %}</li>
     </ul>
 </div>
-<!-- Конец Sidebar'а -->
 <br>
+{% if perms.artists.add_artist %}
 <div class="add-artist-btn-container">
     <a href="{% url 'add_artist' %}" class="add-artist-btn">
         ➕ Добавить исполнителя
     </a>
 </div>
+{% endif %}
 
+<script>
+document.querySelectorAll('.favorite-form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const scrollY = window.scrollY;
+        const formData = new FormData(form);
+        const btn = form.querySelector('button');
+
+        btn.disabled = true;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '⏳';
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const data = await response.json();
+
+            if (data.status === 'added') {
+                btn.classList.add('active');
+                btn.innerHTML = '❤️ В избранном';
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = '🤍 В избранное';
+            }
+
+            window.scrollTo(0, scrollY);
+
+        } catch (error) {
+            console.error('Error:', error);
+            btn.innerHTML = originalText;
+        } finally {
+            btn.disabled = false;
+        }
+    });
+});
+</script>
 
 <link rel="stylesheet" type="text/css" href="{% static 'artists/css/artists_style.css' %}">

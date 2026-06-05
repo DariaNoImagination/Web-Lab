@@ -1,8 +1,7 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8"> 
+    <meta charset="UTF-8">
     <title>{% block title %}Музыкальный портал{% endblock %}</title>
     {% load static %}
     {% load music_tags %}
@@ -18,24 +17,25 @@
                 <a href="{% url item.url_name %}">{{ item.title }}</a>
             </li>
             {% endfor %}
+
             {% if user.is_authenticated %}
             <li class="last">
-            <a href="{% url 'profile' username=user.username %}">Профиль {{ user.username }}</a> |
-            <a href="{% url 'users:logout' %}">Выйти</a>
+                <a href="{% url 'userprofile:profile' %}">Профиль {{ user.username }}</a> |
+                <form method="post" action="{% url 'users:logout' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-btn">Выйти</button>
+                </form>
             </li>
             {% else %}
-             <li class="last">
-                 <a href="{% url 'users:login' %}">Войти</a> |
-                 <a href="#">Регистрация</a>
-    </li>
-{% endif %}
-
- </ul>
- <div class="clear"></div>
- </div>
-
+            <li class="last">
+                <a href="{% url 'users:login' %}">Войти</a> |
+                <a href="{% url 'users:register' %}">Регистрация</a>
+            </li>
+            {% endif %}
         </ul>
+        <div class="clear"></div>
     </div>
+
     <div class="content">
         {% block content %}
         {% endblock %}

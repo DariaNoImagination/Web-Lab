@@ -1,4 +1,4 @@
-from django.shortcuts import  redirect
+from django.shortcuts import redirect
 from artists.models import Artist, Genre
 from django.db.models import F, Q, Value
 from django.urls import reverse_lazy
@@ -10,8 +10,9 @@ from django.views import View
 from datetime import datetime
 from .utils import (
     CareerLengthMixin, ArtistListContextMixin,
-    ArtistDetailContextMixin,GenreMixin,TagMixin)
+    ArtistDetailContextMixin, GenreMixin, TagMixin)
 from django.core.paginator import Paginator
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 
 class ArtistAll(CareerLengthMixin, ArtistListContextMixin, ListView):
@@ -32,7 +33,6 @@ class ArtistAll(CareerLengthMixin, ArtistListContextMixin, ListView):
             context['page_range'] = paginator.page_range
         context['is_paginated'] = paginator.num_pages > 1
         return self.get_artist_list_context(context, 'Музыкальные исполнители')
-
 
 
 class CategoriesAll(ListView):
@@ -63,15 +63,12 @@ class ArtistsByGenre(CareerLengthMixin, ArtistListContextMixin, GenreMixin, List
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-
         page_obj = context.get('page_obj')
         paginator = context.get('paginator')
-
 
         if paginator:
             context['page_range'] = paginator.page_range
         context['is_paginated'] = paginator.num_pages > 1
-
 
         if context['posts']:
             title = f'Исполнители жанра {self.genre.title}'
@@ -107,10 +104,8 @@ class TagArtistListView(CareerLengthMixin, ArtistListContextMixin, TagMixin, Lis
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-
         page_obj = context.get('page_obj')
         paginator = context.get('paginator')
-
 
         if paginator:
             context['page_range'] = paginator.page_range
@@ -200,10 +195,8 @@ class ArtistsByYears(TemplateView):
             career_length=Coalesce(F('active_to'), Value(current_year)) - F('active_from')
         ).order_by('-career_length')
 
-
         paginator = Paginator(artists_data, 10)
         page_obj = paginator.get_page(self.page_number)
-
 
         for artist in page_obj:
             artist.is_active = artist.active_to is None
@@ -219,7 +212,6 @@ class ArtistsByYears(TemplateView):
         context['total_count'] = artists_data.count()
         context['years_range'] = range(1980, current_year + 1)
 
-
         context['is_paginated'] = paginator.num_pages > 1
         context['page_obj'] = page_obj
         context['paginator'] = paginator
@@ -227,19 +219,24 @@ class ArtistsByYears(TemplateView):
 
         return context
 
-class AddArtist(CreateView):
+
+class AddArtist(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     form_class = AddArtistForm
     template_name = 'generic_form.html'
     success_url = reverse_lazy('all_artists')
     extra_context = {'title': 'Добавление исполнителя', 'button_text': 'Добавить исполнителя'}
+    permission_required = 'artists.add_artist'
+    raise_exception = True  # Возвращать 403 вместо редиректа на логин
 
 
-class UpdateArtist(UpdateView):
+class UpdateArtist(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Artist
     form_class = AddArtistForm
     template_name = 'generic_form.html'
     extra_context = {'title': 'Редактировать исполнителя', 'button_text': 'Сохранить изменения'}
     success_url = reverse_lazy('all_artists')
+    permission_required = 'artists.change_artist'
+    raise_exception = True
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -247,10 +244,12 @@ class UpdateArtist(UpdateView):
         return context
 
 
-class DeleteArtist(DeleteView):
+class DeleteArtist(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Artist
     template_name = 'confirm_delete.html'
     success_url = reverse_lazy('all_artists')
+    permission_required = 'artists.delete_artist'
+    raise_exception = True
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()

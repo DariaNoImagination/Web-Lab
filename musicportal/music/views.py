@@ -1,11 +1,11 @@
 from music.models import Song, Album
 from django.db.models import Count
 from artists.models import Genre
-from .forms import AddSongForm,AddAlbumForm
+from .forms import AddSongForm, AddAlbumForm
 from django.views.generic import TemplateView
-from django.views.generic.edit import CreateView,UpdateView,DeleteView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
@@ -48,17 +48,14 @@ class FilterMusicView(TemplateView):
         elif self.content_type == 'album':
             songs = Song.objects.none()
 
-
         combined_list = list(songs) + list(albums)
         combined_list.sort(key=lambda x: getattr(x, 'year', 0), reverse=True)
-
 
         paginator = Paginator(combined_list, self.paginate_by)
         try:
             page_obj = paginator.page(self.page_number)
         except (PageNotAnInteger, EmptyPage):
             page_obj = paginator.page(1)
-
 
         paginated_songs = []
         paginated_albums = []
@@ -97,13 +94,10 @@ class FilterMusicView(TemplateView):
         context['selected_type'] = self.content_type
         context['selected_year'] = self.year
 
-
         context['is_paginated'] = paginator.num_pages > 1
         context['page_obj'] = page_obj
         context['paginator'] = paginator
         context['page_range'] = paginator.page_range
-
-
 
         return context
 
@@ -122,17 +116,14 @@ class AboutMusic(TemplateView):
         songs = Song.objects.select_related('artist', 'genre', 'album').all()
         albums = Album.objects.select_related('artist', 'genre').all()
 
-
         combined_list = list(songs) + list(albums)
         combined_list.sort(key=lambda x: getattr(x, 'year', 0), reverse=True)
 
-      
         paginator = Paginator(combined_list, self.paginate_by)
         try:
             page_obj = paginator.page(self.page_number)
         except (PageNotAnInteger, EmptyPage):
             page_obj = paginator.page(1)
-
 
         paginated_songs = []
         paginated_albums = []
@@ -156,7 +147,6 @@ class AboutMusic(TemplateView):
         context['newest_album'] = new_album
         context['title'] = 'Каталог музыки'
 
-
         context['is_paginated'] = paginator.num_pages > 1
         context['page_obj'] = page_obj
         context['paginator'] = paginator
@@ -164,40 +154,52 @@ class AboutMusic(TemplateView):
 
         return context
 
-class AddAlbum(CreateView):
+
+# CRUD операции с PermissionRequiredMixin
+class AddAlbum(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     form_class = AddAlbumForm
     template_name = 'generic_form.html'
     success_url = reverse_lazy('all_music')
-    extra_context = {'title': 'Добавить альбом',
-        'button_text': 'Добавить альбом'}
+    extra_context = {'title': 'Добавить альбом', 'button_text': 'Добавить альбом'}
+    permission_required = 'music.add_album'
+    raise_exception = True
 
-class AddSong(CreateView):
+
+class AddSong(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     form_class = AddSongForm
     template_name = 'generic_form.html'
     success_url = reverse_lazy('all_music')
-    extra_context = {'title': 'Добавить песню',
-        'button_text': 'Добавить песню'}
+    extra_context = {'title': 'Добавить песню', 'button_text': 'Добавить песню'}
+    permission_required = 'music.add_song'
+    raise_exception = True
 
-class UpdateAlbum(UpdateView):
+
+class UpdateAlbum(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Album
     form_class = AddAlbumForm
     template_name = 'generic_form.html'
     success_url = reverse_lazy('all_music')
-    extra_context = {'title': 'Редактировать альбом',
-        'button_text': 'Сохранить изменения'}
+    extra_context = {'title': 'Редактировать альбом', 'button_text': 'Сохранить изменения'}
+    permission_required = 'music.change_album'
+    raise_exception = True
 
-class UpdateSong(UpdateView):
+
+class UpdateSong(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Song
     form_class = AddSongForm
     template_name = 'generic_form.html'
     success_url = reverse_lazy('all_music')
-    extra_context = {'title': 'Редактировать песню',
-        'button_text': 'Сохранить изменения'}
+    extra_context = {'title': 'Редактировать песню', 'button_text': 'Сохранить изменения'}
+    permission_required = 'music.change_song'
+    raise_exception = True
 
-class DeleteAlbum(DeleteView):
+
+class DeleteAlbum(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Album
     template_name = 'confirm_delete.html'
     success_url = reverse_lazy('all_music')
+    permission_required = 'music.delete_album'
+    raise_exception = True
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -213,10 +215,12 @@ class DeleteAlbum(DeleteView):
         return context
 
 
-class DeleteSong(DeleteView):
+class DeleteSong(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Song
     template_name = 'confirm_delete.html'
     success_url = reverse_lazy('all_music')
+    permission_required = 'music.delete_song'
+    raise_exception = True
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()

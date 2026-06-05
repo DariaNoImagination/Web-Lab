@@ -519,3 +519,27 @@ hr {
         transform: translateY(-2px);
         color: white;
     }
+  .favorite-form {
+    display: inline-block;
+    margin: 10px 0;
+}
+
+.favorite-btn {
+    background: none;
+    border: 1px solid #48D1CC;
+    padding: 6px 15px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.favorite-btn.active {
+    background: #48D1CC;
+    color: white;
+}
+
+.favorite-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}

@@ -66,8 +66,12 @@
                 <p class="no-items">У исполнителя пока нет альбомов</p>
             {% endif %}
              <div class="artist-buttons">
-                <a href="{% url 'edit_artist' artist.id %}" class="edit-artist-btn">✏️ Редактировать</a>
-                <a href="{% url 'delete_artist' artist.id %}" class="edit-artist-btn"> 🗑️ Удалить</a>
+                 {% if perms.artists.change_artist %}
+                    <a href="{% url 'edit_artist' artist.id %}" class="edit-artist-btn">✏️ Редактировать</a>
+                {% endif %}
+                {% if perms.artists.delete_artist %}
+                    <a href="{% url 'delete_artist' artist.id %}" class="edit-artist-btn" >🗑️ Удалить</a>
+                {% endif %}
             </div>
         </div>
         

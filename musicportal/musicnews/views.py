@@ -3,15 +3,16 @@ from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
 from .forms import AddNewsForm
-from django.views.generic import ListView,TemplateView
-from django.views.generic.edit import CreateView,UpdateView,DeleteView
+from django.views.generic import ListView, TemplateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 category_names = {
-        'events': 'Концерты и события',
-        'awards': 'Премии и награды',
-        'new': 'Новинки музыки',
-    }
+    'events': 'Концерты и события',
+    'awards': 'Премии и награды',
+    'new': 'Новинки музыки',
+}
 
 
 class NewsAll(ListView):
@@ -19,6 +20,7 @@ class NewsAll(ListView):
     template_name = 'news.html'
     context_object_name = 'news'
     paginate_by = 10
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Все новости музыки'
@@ -45,6 +47,7 @@ class NewsByCategoryView(ListView):
     template_name = 'news.html'
     context_object_name = 'news'
     paginate_by = 10
+
     def dispatch(self, request, *args, **kwargs):
         self.category_slug = kwargs['category_slug']
         self.category_name = category_names.get(self.category_slug, self.category_slug)
@@ -70,24 +73,32 @@ class NewsByCategoryView(ListView):
         return context
 
 
-
-class AddNews(CreateView):
+# CRUD операции с PermissionRequiredMixin
+class AddNews(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     form_class = AddNewsForm
     template_name = 'generic_form.html'
     success_url = reverse_lazy('all_news')
-    extra_context = {'title': 'Добавление новости','button_text': 'Добавить новость'}
+    extra_context = {'title': 'Добавление новости', 'button_text': 'Добавить новость'}
+    permission_required = 'musicnews.add_news'
+    raise_exception = True
 
-class UpdateNews(UpdateView):
+
+class UpdateNews(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = News
     fields = ['title', 'category', 'content']
     template_name = 'generic_form.html'
     success_url = reverse_lazy('all_news')
-    extra_context = {'title': 'Редактирование новости','button_text': 'Сохранить изменения'}
+    extra_context = {'title': 'Редактирование новости', 'button_text': 'Сохранить изменения'}
+    permission_required = 'musicnews.change_news'
+    raise_exception = True
 
-class DeleteNews(DeleteView):
+
+class DeleteNews(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = News
     template_name = 'confirm_delete.html'
     success_url = reverse_lazy('all_news')
+    permission_required = 'musicnews.delete_news'
+    raise_exception = True
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()

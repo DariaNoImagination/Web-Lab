@@ -12,7 +12,7 @@
             <p class="community-artist"><strong>Исполнитель:</strong> {{ community.artist.title }}</p>
 
             {% if community.description %}
-            <p class="community-description">{{ community.description }}</p>
+            <p class="community-description">{{ community.description|truncatewords:30 }}</p>
             {% endif %}
 
             <p><strong>📅 Основано:</strong> {{ community.founded }}</p>
@@ -20,20 +20,36 @@
             <p><strong>👥 Участников:</strong> {{ community.members }}</p>
 
             <div class="community-footer">
-                <span class="join-link">Вступить →</span>
+                {% if user.is_authenticated %}
+                    {% if community in user.joined_communities.all %}
+                        <span class="join-link">
+                            <a href="{% url 'userprofile:toggle_community' community.id %}" class="leave-link">Выйти ←</a>
+                        </span>
+                    {% else %}
+                        <span class="join-link">
+                            <a href="{% url 'userprofile:toggle_community' community.id %}" class="join-link">Вступить →</a>
+                        </span>
+                    {% endif %}
+                {% else %}
+                    <span class="join-link">
+                        <a href="{% url 'users:login' %}">Вступить →</a>
+                    </span>
+                {% endif %}
             </div>
 
-             <div class="edit-btn">
-                    <a href="{% url 'edit_community' community.id%}" class="edit-btn">
-            ✏️ Редактировать
-        </a>
-                </div>
-            <div class="edit-btn">
-                   <a href="{% url 'delete_community' community.id %}" class="edit-btn">
-            🗑️ Удалить
-        </a>
-        </div>
+            <div class="community-buttons">
+                 {% if perms.communities.change_community %}
+                <a href="{% url 'edit_community' community.id %}" class="edit-community-btn">
+                    ✏️ Редактировать
+                </a>
+                {% endif %}
+                {% if perms.communities.delete_community %}
+                <a href="{% url 'delete_community' community.id %}" class="delete-community-btn" onclick="return confirm('Вы уверены?')">
+                    🗑️ Удалить
+                </a>
+                {% endif %}
             </div>
+        </div>
         {% if not forloop.last %}
         <hr>
         {% endif %}
@@ -43,10 +59,50 @@
     <p>Нет доступных сообществ</p>
 {% endif %}
 <br>
+{% if perms.communities.add_community %}
 <div class="add-community-btn-container">
     <a href="{% url 'add_community' %}" class="add-community-btn">
         ➕ Добавить сообщество
     </a>
 </div>
+{% endif %}
+
 <link rel="stylesheet" type="text/css" href="{% static 'communities/css/fanclub.css' %}">
 
+<script>
+document.querySelectorAll('.join-link a, .leave-link a').forEach(link => {
+    link.addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        const url = link.getAttribute('href');
+        const scrollY = window.scrollY;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const data = await response.json();
+
+            if (data.status === 'added') {
+                link.textContent = 'Выйти ←';
+                link.classList.remove('join-link');
+                link.classList.add('leave-link');
+            } else if (data.status === 'removed') {
+                link.textContent = 'Вступить →';
+                link.classList.remove('leave-link');
+                link.classList.add('join-link');
+            }
+
+
+            window.scrollTo(0, scrollY);
+        } catch (error) {
+            console.error('Error:', error);
+            window.location.href = url;
+        }
+    });
+});
+</script>

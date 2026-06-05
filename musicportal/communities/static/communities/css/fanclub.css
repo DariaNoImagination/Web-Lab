@@ -87,13 +87,49 @@
     color: white;
     text-decoration: none;
 }
-.edit-btn {
+
+
+.community-footer {
+    margin-top: 15px;
+    text-align: right;
+}
+
+.join-link a, .leave-link a {
+    display: inline-block;
+    background: #48D1CC;
+    color: white;
+    padding: 6px 15px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.leave-link a {
+    background: #ff4444;
+}
+
+.join-link a:hover, .leave-link a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.community-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.edit-community-btn {
     background: #48D1CC;
         color: white;
         border: none;
         padding: 5px 10px;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 400;
         border-radius: 20px;
         cursor: pointer;
         transition: all 0.2s;
@@ -104,10 +140,30 @@
 
 }
 
-  .edit-btn:hover {
+  .edit-community-btn:hover {
         background: #00688B;
         transform: translateY(-2px);
         color: white;
     }
 
+.delete-community-btn {
+   background: #48D1CC;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        font-size: 14px;
+        font-weight: 400;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-block;
+        align-items: center;
+        gap: 5px;
 
+
+}
+  .delete-community-btn:hover {
+        background: #00688B;
+        transform: translateY(-2px);
+        color: white;
+    }

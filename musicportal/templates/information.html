@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<h1>{{ title }}</h1>
+<h1><div class="title">{{ title }}</div></h1>
 
 {% if 'исполнители' in title|lower or app_name == 'artists' %}
     {% include 'artist_list.html' with artists=posts %}
@@ -19,7 +19,6 @@
     {% include 'review_template.html' with reviews=posts %}
 
 {% elif 'Сообщества' in title or app_name == 'communities' %}
-    <h2>Фан-сообщества</h2>
     {% include 'list_communities.html' with communities=posts %}
 
 {% else %}

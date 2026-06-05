@@ -1,6 +1,6 @@
 from django.db import models
 from music.models import Album,Song
-
+from django.contrib.auth import get_user_model
 class PublishedModel(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(is_published=Review.Status.PUBLISHED)
@@ -18,6 +18,9 @@ class Review(models.Model):
     is_published =  models.BooleanField(choices=Status.choices,default=Status.DRAFT, verbose_name="Статус")
     objects = models.Manager()
     published = PublishedModel()
+    author = models.ForeignKey(get_user_model(),
+                               on_delete=models.SET_NULL, related_name='posts',
+                               null=True, default=None)
 
     class Meta:
         verbose_name = "Рецензия"
@@ -26,11 +29,12 @@ class Review(models.Model):
 
 class Comment(models.Model):
     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='comments')
-    author = models.CharField(max_length=100, verbose_name="Автор")
     text = models.TextField(verbose_name="Текст комментария")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     is_published = models.BooleanField(default=True, verbose_name="Опубликован")
-
+    author = models.ForeignKey(get_user_model(),
+                               on_delete=models.SET_NULL, related_name='comments',
+                               null=True, default=None,verbose_name="Автор")
     class Meta:
         verbose_name = "Комментарий"
         verbose_name_plural = "Комментарии"

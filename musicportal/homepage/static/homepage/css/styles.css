@@ -424,3 +424,29 @@ ul.lang-list li a:hover {color: #7FFFD4;}
 .form-button:hover {
     background: #40E0D0;
 }
+.form-button {
+    min-width: 200px;
+    font-size: 16px;
+    background: #48D1CC;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+/* Кнопка выхода в стиле сайта */
+.logout-btn {
+    background: none;
+    border: none;
+    color: #E0FFFF;
+    font-size: 20px;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    transition: color 0.2s;
+}
+
+.logout-btn:hover {
+    color: #7FFFD4;
+    
+}

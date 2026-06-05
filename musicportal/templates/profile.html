@@ -5,38 +5,51 @@
 <div class="profile-container">
     <h1>Профиль пользователя: {{ username }}</h1>
 
+
     <div class="profile-section">
-        <h2>Основная информация</h2>
-        <p><strong>Имя пользователя:</strong> {{ username }}</p>
-        <p><strong>Количество рецензий:</strong> {{ reviews_count|default:"0" }}</p>
-        <p><strong>Количество любимых исполнителей:</strong> {{ favorite_artists_count|default:"0" }}</p>
-        <p><strong>Количество любимых песен:</strong> {{ favorite_songs_count|default:"0" }}</p>
+    <div class="profile-info-wrapper">
+        <div class="profile-stats">
+            <h2>Основная информация</h2>
+            <p><strong>Имя пользователя:</strong> {{ username }}</p>
+            <p><strong>Количество рецензий:</strong> {{ reviews_count|default:"0" }}</p>
+            <p><strong>Количество любимых исполнителей:</strong> {{ favorite_artists_count|default:"0" }}</p>
+            <p><strong>Количество любимых песен:</strong> {{ favorite_songs_count|default:"0" }}</p>
+            <p><strong>Количество любимых альбомов:</strong> {{ favorite_albums_count|default:"0" }}</p>
+            <p><strong>Сообществ:</strong> {{ communities|length|default:"0" }}</p>
+            <hr>
+            <p><strong><a href="{% url 'users:password_change' %}">Сменить пароль</a></strong></p>
+        </div>
+
+        <div class="profile-avatar">
+            {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="avatar-img">
+            {% else %}
+                <div class="avatar-placeholder">👤</div>
+            {% endif %}
+        </div>
     </div>
-
-    <hr>
-
+</div>
     <div class="profile-section">
-        <h2>Любимые исполнители</h2>
+        <h2>Любимые исполнители ({{ favorite_artists_count }})</h2>
         {% if favorite_artists %}
-            <div class="artists-list">
+            <div class="items-grid">
             {% for artist in favorite_artists %}
-                <div class="artist-item">
-                    <strong>{{ artist.name }}</strong>
-                    {% if artist.genre %} ({{ artist.genre }}){% endif %}
-
-                    {% if artist.favorite_songs %}
-                        <div class="songs-list">
-                            {% for song in artist.favorite_songs %}
-                                <div class="song-item">
-                                    {{ song.title }}
-                                    {% if song.album %} - альбом "{{ song.album }}"{% endif %}
-                                    {% if song.year %} ({{ song.year }}){% endif %}
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="no-items">Нет добавленных песен</p>
-                    {% endif %}
+                <div class="item-card">
+                    <div class="item-photo">
+                        {% if artist.photo %}
+                            <img src="{{ artist.photo.url }}" alt="{{ artist.title }}">
+                        {% else %}
+                            <div class="item-no-photo">🎤</div>
+                        {% endif %}
+                    </div>
+                    <div class="item-info">
+                        <h3>{{ artist.title }}</h3>
+                        <p class="item-genre">{{ artist.genre.title|default:"Жанр не указан" }}</p>
+                        <form method="post" action="{% url 'userprofile:toggle_favorite_artist' artist.id %}" class="favorite-form">
+                            {% csrf_token %}
+                            <button type="submit" class="favorite-btn active">❤️ В избранном</button>
+                        </form>
+                    </div>
                 </div>
             {% endfor %}
             </div>
@@ -48,62 +61,124 @@
     <hr>
 
     <div class="profile-section">
-    <h2>Рецензии ({{ reviews|length }})</h2>
-    {% if reviews %}
-        <div class="reviews-list">
-        {% for review in reviews %}
-            <div class="review-item">
-                <h3>Рецензия #{{ forloop.counter }}</h3>
-                <p><strong>Тип:</strong>
-                    {% if review.type == 'album' %}💿 Альбом
-                    {% elif review.type == 'song' %}🎵 Песня
-                    {% else %}—{% endif %}
-                </p>
-                <p><strong>Название:</strong> {{ review.title|default:"—" }}</p>
-                <p><strong>Исполнитель:</strong> {{ review.artist|default:"—" }}</p>
-                {% if review.album %}
-                    <p><strong>Альбом:</strong> {{ review.album }}</p>
-                {% endif %}
-                <p><strong>Оценка:</strong> {{ review.rating }}/10</p>
-                <p><strong>Рецензия:</strong> {{ review.text|default:"—" }}</p>
-                <div class="add-review-btn">
-                    <a href="{% url 'edit_review' username=username pk=review.id %}" class="add-review-btn ">
-            ✏️ Редактировать
-        </a>
+        <h2>Любимые песни ({{ favorite_songs_count }})</h2>
+        {% if favorite_songs %}
+            <div class="items-grid">
+            {% for song in favorite_songs %}
+                <div class="item-card small">
+                    <div class="item-info">
+                        <h3>{{ song.title }}</h3>
+                        <p class="item-artist">{{ song.artist.title|default:"Исполнитель не указан" }}</p>
+                        <p class="item-year">{{ song.year }}</p>
+                        <form method="post" action="{% url 'userprofile:toggle_favorite_song' song.id %}" class="favorite-form">
+                            {% csrf_token %}
+                            <button type="submit" class="favorite-btn active">❤️ В избранном</button>
+                        </form>
+                    </div>
                 </div>
-                 <div class="add-review-btn">
-                    <a href="{% url 'delete_review' username=username pk=review.id %}" class="add-review-btn ">
-            🗑️ Удалить
-        </a>
-                </div>
+            {% endfor %}
             </div>
-        {% endfor %}
-        </div>
-    {% else %}
-        <p class="no-items">У пользователя нет рецензий</p>
-    {% endif %}
-</div>
+        {% else %}
+            <p class="no-items">У пользователя нет любимых песен</p>
+        {% endif %}
+    </div>
+
+    <hr>
+
+    <div class="profile-section">
+        <h2>Любимые альбомы ({{ favorite_albums_count }})</h2>
+        {% if favorite_albums %}
+            <div class="items-grid">
+            {% for album in favorite_albums %}
+                <div class="item-card small">
+                    <div class="item-info">
+                        <h3>{{ album.title }}</h3>
+                        <p class="item-artist">{{ album.artist.title|default:"Исполнитель не указан" }}</p>
+                        <p class="item-year">{{ album.year }}</p>
+                        <p class="item-songs">🎵 {{ album.songs_count|default:"0" }} песен</p>
+                        <form method="post" action="{% url 'userprofile:toggle_favorite_album' album.id %}" class="favorite-form">
+                            {% csrf_token %}
+                            <button type="submit" class="favorite-btn active">❤️ В избранном</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-items">У пользователя нет любимых альбомов</p>
+        {% endif %}
+    </div>
+
+    <hr>
+
+    <div class="profile-section">
+        <h2>Рецензии ({{ reviews|length }})</h2>
+        {% if reviews %}
+            <div class="reviews-list">
+            {% for review in reviews %}
+                <div class="review-item">
+                    <h3>Рецензия #{{ forloop.counter }}</h3>
+                    <p><strong>Тип:</strong>
+                        {% if review.album%}💿 Альбом
+                        {% elif review.song %}🎵 Песня
+                        {% else %}—{% endif %}
+                    </p>
+
+
+                    {% if review.album %}
+                        <p><strong>Исполнитель:</strong> {{ review.album.artist|default:"—" }}</p>
+                        <p><strong>Альбом:</strong> {{ review.album }}</p>
+                    {% else %}
+                        <p><strong>Исполнитель:</strong> {{ review.song.artist|default:"—" }}</p>
+                        <p><strong>Песня:</strong> {{ review.song }}</p>
+                    {% endif %}
+                    <p><strong>Оценка:</strong> {{ review.rating }}/10</p>
+                    <p><strong>Рецензия:</strong> {{ review.text|truncatewords:30|default:"—" }}</p>
+                    <div class="review-buttons">
+                        <a href="{% url 'userprofile:edit_review' pk=review.id %}" class="edit-review-btn">
+                            ✏️ Редактировать
+                        </a>
+                        <a href="{% url 'userprofile:delete_review'  pk=review.id %}" class="delete-review-btn" >
+                            🗑️ Удалить
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-items">У пользователя нет рецензий</p>
+        {% endif %}
+    </div>
 
     <hr>
 
     <div class="profile-section">
         <h2>Сообщества ({{ communities|length }})</h2>
         {% if communities %}
-            <div class="communities-list">
+            <div class="items-grid">
             {% for community in communities %}
-                <div class="community-item">
-                    <strong>{{ community.club_name|default:community.club_name }}</strong>
-                    {% if community.description %} - {{ community.description }}{% endif %}
-                    <br>
-                    <small>Участников: {{ community.members|default:community.members}}</small>
+                <div class="item-card small">
+                    <div class="item-info">
+                        <h3>{{ community.club_name }}</h3>
+                        <p class="item-description">{{ community.description|truncatewords:20|default:"Нет описания" }}</p>
+                        <p class="item-members">👥 {{ community.members|default:"0" }} участников</p>
+                        <p class="item-founded">📅 {{ community.founded }}</p>
+                        <form method="post" action="{% url 'userprofile:toggle_community' community.id %}" class="favorite-form">
+                            {% csrf_token %}
+                            <button type="submit" class="community-btn active">⭐ В сообществе</button>
+                        </form>
+                    </div>
                 </div>
             {% endfor %}
             </div>
         {% else %}
-            <p class="no-items">Пользователь не состоит в сообществах</p>'
+            <p class="no-items">Пользователь не состоит в сообществах</p>
         {% endif %}
     </div>
 </div>
 
-<link rel="stylesheet" type="text/css" href="{% static 'userprofile/css/profile_styles.css' %}">
+
+
+
+<link rel="stylesheet" type="text/css" href="{% static 'users/css/profile_styles.css' %}">
 {% endblock %}

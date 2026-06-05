@@ -1,86 +1,83 @@
-from django.http import HttpResponse
-from django.views.generic import TemplateView
-from artists.models import Artist
-from music.models import Song, Album
+from django.views import View
 from reviews.models import Review
+from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .forms import ProfileUserForm
 from communities.models import Community
-from django.views.generic.edit import UpdateView,DeleteView
+from artists.models import Artist
+from music.models import Song,Album
+from django.shortcuts import  redirect
+from django.http import JsonResponse
+from django.views.generic import ListView
+from django.views.generic.edit import UpdateView, DeleteView
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 
-
-class UserProfile(TemplateView):
+class ProfileUser(LoginRequiredMixin, UpdateView):
+    model = get_user_model()
+    form_class = ProfileUserForm
     template_name = 'profile.html'
+    extra_context = {'title': 'Профиль пользователя'}
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def get_success_url(self):
+        return reverse_lazy('userprofile:profile')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        context['username'] = user.username
+
+        # Любимые исполнители
+        if hasattr(user, 'favorite_artists'):
+            favorite_artists = user.favorite_artists.all()
+            context['favorite_artists'] = favorite_artists
+            context['favorite_artists_count'] = favorite_artists.count()
+        else:
+            context['favorite_artists'] = []
+            context['favorite_artists_count'] = 0
+
+        # Любимые песни
+        if hasattr(user, 'favorite_songs'):
+            favorite_songs = user.favorite_songs.all()
+            context['favorite_songs'] = favorite_songs
+            context['favorite_songs_count'] = favorite_songs.count()
+        else:
+            context['favorite_songs'] = []
+            context['favorite_songs_count'] = 0
+
+        # Любимые альбомы
+        if hasattr(user, 'favorite_albums'):
+            favorite_albums = user.favorite_albums.all()
+            context['favorite_albums'] = favorite_albums
+            context['favorite_albums_count'] = favorite_albums.count()
+        else:
+            context['favorite_albums'] = []
+            context['favorite_albums_count'] = 0
+
+        user_reviews = []
+        # Рецензии
+        all_reviews = Review.objects.all()
+        for review in all_reviews:
+            if review.author == user:
+                user_reviews.append(review)
 
 
-        all_artists = list(Artist.objects.all())
-        all_songs = list(Song.objects.select_related('artist', 'album').all())
-        all_reviews = list(Review.objects.select_related('song', 'album').all())
-        all_communities = list(Community.objects.all())
+        context['reviews'] = user_reviews
+        context['reviews_count'] = len(user_reviews)
 
 
-        artists = all_artists[2], all_artists[7], all_artists[6]
-
-
-        favorite_artists = []
-        favorite_songs = []
-        for artist in artists:
-            artist_songs = [s for s in all_songs if s.artist == artist][:2]
-            favorite_songs.append(artist_songs[0] if artist_songs else None)
-            favorite_artists.append({
-                'name': artist.title,
-                'genre': artist.genre.title if artist.genre else "Не указан",
-                'favorite_songs': [
-                    {
-                        'title': song.title,
-                        'album': song.album.title if song.album else "—",
-                        'year': song.year
-                    } for song in artist_songs
-                ]
-            })
-
-
-        reviews_data = []
-        for review in [all_reviews[1], all_reviews[4]] if len(all_reviews) > 3 else all_reviews:
-            if review.song:
-                reviews_data.append({
-                    'id': review.id,
-                    'type': 'song',
-                    'title': review.song.title,
-                    'artist': review.song.artist.title if review.song.artist else "Не указан",
-                    'album': review.song.album.title if review.song.album else "—",
-                    'rating': review.rating,
-                    'text': review.text
-                })
-            elif review.album:
-                reviews_data.append({
-                    'id': review.id,  # ← ДОБАВЬТЕ ЭТО!
-                    'type': 'album',
-                    'title': review.album.title,
-                    'artist': review.album.artist.title if review.album.artist else "Не указан",
-                    'rating': review.rating,
-                    'text': review.text
-                })
-
-
-        context['title'] = f'Профиль: username'
-        context['username'] = 'username'
-        context['reviews_count'] = len(all_reviews)
-        context['favorite_artists_count'] = len(artists)
-        context['favorite_songs_count'] = len(favorite_songs)
-
-
-        context['favorite_artists'] = favorite_artists
-        context['reviews'] = reviews_data
-        context['communities'] = all_communities[:1]
+        # Сообщества
+        if hasattr(user, 'joined_communities'):
+            communities = user.joined_communities.all()
+            context['communities'] = communities
+        else:
+            context['communities'] = []
 
         return context
-
-
-def edit_profile(request, username):
-    return HttpResponse("<h1>Редактирование профиля</h1>")
 
 
 class UpdateReview(UpdateView):
@@ -91,7 +88,8 @@ class UpdateReview(UpdateView):
                      'button_text': 'Опубликовать рецензию'}
 
     def get_success_url(self):
-        return reverse_lazy('profile', kwargs={'username': self.request.user.username})
+        return reverse_lazy('userprofile:profile')
+
 
 
 class DeleteReview(DeleteView):
@@ -99,7 +97,7 @@ class DeleteReview(DeleteView):
     template_name = 'confirm_delete.html'
 
     def get_success_url(self):
-        return reverse_lazy('profile', kwargs={'username': self.request.user.username})
+        return reverse_lazy('userprofile:profile')  # Исправлено
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -120,3 +118,139 @@ class DeleteReview(DeleteView):
 
         context['cancel_url'] = self.get_success_url()
         return context
+
+
+class BaseToggleFavoriteView(LoginRequiredMixin, View):
+    """Базовый класс для переключения избранного"""
+    model = None
+    favorite_field = None
+    success_url_name = None
+
+    def get_object(self, obj_id):
+        return get_object_or_404(self.model, id=obj_id)
+
+    def is_favorite(self, user, obj):
+        return getattr(user, self.favorite_field).filter(id=obj.id).exists()
+
+    def add_favorite(self, user, obj):
+        getattr(user, self.favorite_field).add(obj)
+
+    def remove_favorite(self, user, obj):
+        getattr(user, self.favorite_field).remove(obj)
+
+    def get_success_url(self):
+        return self.request.META.get('HTTP_REFERER', reverse_lazy(self.success_url_name))
+
+    def post(self, request, *args, **kwargs):
+        obj_id = kwargs.get('pk')
+        obj = self.get_object(obj_id)
+
+        if self.is_favorite(request.user, obj):
+            self.remove_favorite(request.user, obj)
+            status = 'removed'
+        else:
+            self.add_favorite(request.user, obj)
+            status = 'added'
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'status': status,
+                'message': f'{"Добавлено" if status == "added" else "Удалено"} в избранное'
+            })
+
+
+        return redirect(request.META.get('HTTP_REFERER', reverse_lazy(self.success_url_name)))
+
+
+
+class ToggleFavoriteArtistView(BaseToggleFavoriteView):
+    model = Artist
+    favorite_field = 'favorite_artists'
+    success_url_name = 'all_artists'
+
+
+class FavoriteArtistsListView(LoginRequiredMixin, ListView):
+    template_name = 'favorites/artists.html'
+    context_object_name = 'artists'
+
+    def get_queryset(self):
+        return self.request.user.favorite_artists.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Любимые исполнители'
+        return context
+
+
+
+class ToggleFavoriteSongView(BaseToggleFavoriteView):
+    model = Song
+    favorite_field = 'favorite_songs'
+    success_url_name = 'all_music'
+
+
+class FavoriteSongsListView(LoginRequiredMixin, ListView):
+    template_name = 'favorites/songs.html'
+    context_object_name = 'songs'
+
+    def get_queryset(self):
+        return self.request.user.favorite_songs.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Любимые песни'
+        return context
+
+
+class ToggleFavoriteAlbumView(BaseToggleFavoriteView):
+    model = Album
+    favorite_field = 'favorite_albums'
+    success_url_name = 'all_music'
+
+
+class FavoriteAlbumsListView(LoginRequiredMixin, ListView):
+    template_name = 'favorites/albums.html'
+    context_object_name = 'albums'
+
+    def get_queryset(self):
+        return self.request.user.favorite_albums.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Любимые альбомы'
+        return context
+
+
+
+class ToggleCommunityView(BaseToggleFavoriteView):
+    model = Community
+    favorite_field = 'joined_communities'
+    success_url_name = 'all_communities'
+
+    def add_favorite(self, user, obj):
+        getattr(user, self.favorite_field).add(obj)
+        obj.members += 1
+        obj.save()
+
+    def remove_favorite(self, user, obj):
+        getattr(user, self.favorite_field).remove(obj)
+        if obj.members > 0:
+            obj.members -= 1
+            obj.save()
+
+    def is_favorite(self, user, obj):
+        return getattr(user, self.favorite_field).filter(id=obj.id).exists()
+
+
+class JoinedCommunitiesListView(LoginRequiredMixin, ListView):
+    template_name = 'favorites/communities.html'
+    context_object_name = 'communities'
+
+    def get_queryset(self):
+        return self.request.user.joined_communities.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Мои сообщества'
+        return context
+

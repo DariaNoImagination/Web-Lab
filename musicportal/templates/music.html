@@ -7,7 +7,6 @@
 <div class="filters-header">
     <div class="music-filter">
         <form method="get" action="{% url 'filter_music' %}" class="filter-form">
-            <!-- Выбор жанра -->
             <div class="filter-group">
                 <label>Жанр:</label>
                 <div class="styled-select">
@@ -132,19 +131,31 @@
                 <p><strong>Рейтинг (на основе рецензий):</strong> {{ song.get_avg_rating }}</p>
                 {% endif %}
 
+
+                {% if user.is_authenticated %}
+                <form method="post" action="{% url 'userprofile:toggle_favorite_song' song.id %}" class="favorite-form">
+                    {% csrf_token %}
+                    {% if song in user.favorite_songs.all %}
+                        <button type="submit" class="favorite-btn active">❤️ В избранном</button>
+                    {% else %}
+                        <button type="submit" class="favorite-btn">🤍 В избранное</button>
+                    {% endif %}
+                </form>
+                {% endif %}
+
                 <div class="music-footer">
                     <span class="listen-link">Слушать →</span>
                 </div>
-                <div class="edit-btn">
-                    <a href="{% url 'update_song' song.id %}" class="edit-btn">
-                        ✏️ Редактировать
-                    </a>
+                {% if perms.music.change_song %}
+                `<div class="edit-btn">
+                    <a href="{% url 'update_song' song.id %}" class="edit-btn">✏️ Редактировать</a>
                 </div>
+                {% endif %}
+                {% if perms.music.delete_song %}
                 <div class="edit-btn">
-                    <a href="{% url 'delete_song' song.id %}" class="edit-btn">
-                        🗑️ Удалить
-                    </a>
-                </div>
+                    <a href="{% url 'delete_song' song.id %}" class="edit-btn">🗑️ Удалить</a>`
+</div>
+{% endif %}
             </div>
             {% endfor %}
         </div>
@@ -180,19 +191,33 @@
                 {% if album.get_avg_rating > 0 %}
                 <p><strong>Рейтинг (на основе рецензий):</strong> {{ album.get_avg_rating }}</p>
                 {% endif %}
+
+
+                {% if user.is_authenticated %}
+                <form method="post" action="{% url 'userprofile:toggle_favorite_album' album.id %}" class="favorite-form">
+                    {% csrf_token %}
+                    {% if album in user.favorite_albums.all %}
+                        
+                        <button type="submit" class="favorite-btn active">❤️ В избранном</button>
+                    {% else %}
+                        <button type="submit" class="favorite-btn">🤍 В избранное</button>
+                    {% endif %}
+                </form>
+                {% endif %}
+
                 <div class="music-footer">
                     <span class="listen-link">Слушать →</span>
                 </div>
+                {% if perms.music.change_album %}
                 <div class="edit-btn">
-                    <a href="{% url 'update_album' album.id %}" class="edit-btn">
-                        ✏️ Редактировать
-                    </a>
+                    <a href="{% url 'update_album' album.id %}" class="edit-btn">✏️ Редактировать</a>
                 </div>
-                 <div class="edit-btn">
-                    <a href="{% url 'delete_album' album.id %}" class="edit-btn">
-                        🗑️ Удалить
-                    </a>
+                {% endif %}
+                {% if perms.music.delete_album %}
+                <div class="edit-btn">
+                    <a href="{% url 'delete_album' album.id %}" class="edit-btn">🗑️ Удалить</a>
                 </div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
@@ -205,15 +230,18 @@
     </div>
     {% endif %}
 
+   {% if perms.music.add_song or perms.music.add_album %}
     <div class="add-buttons-container">
-        <a href="{% url 'add_song' %}" class="add-btn">
-            ➕ Добавить песню
-        </a>
-        <a href="{% url 'add_album' %}" class="add-btn">
-            💿 Добавить альбом
-        </a>
-    </div>
+    {% if perms.music.add_song %}
+    <a href="{% url 'add_song' %}" class="add-btn">➕ Добавить песню</a>
+    {% endif %}
+    {% if perms.music.add_album %}
+    <a href="{% url 'add_album' %}" class="add-btn">💿 Добавить альбом</a>
+    {% endif %}
 </div>
+{% endif %}
+</div>
+
 {% if is_paginated or paginator.num_pages > 1 %}
 <div class="pagination">
     <span class="step-links">
@@ -243,6 +271,54 @@
     </span>
 </div>
 {% endif %}
+<script>
+document.querySelectorAll('.favorite-form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+
+        const currentUrl = window.location.href;
+        const scrollY = window.scrollY;
+
+        const formData = new FormData(form);
+        const btn = form.querySelector('button');
+
+
+        btn.disabled = true;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '⏳';
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const data = await response.json();
+
+           
+            if (data.status === 'added') {
+                btn.classList.add('active');
+                btn.innerHTML = '❤️ В избранном';
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = '🤍 В избранное';
+            }
+
+
+            window.scrollTo(0, scrollY);
+
+        } catch (error) {
+            console.error('Error:', error);
+            btn.innerHTML = originalText;
+        } finally {
+            btn.disabled = false;
+        }
+    });
+});
+</script>
 <link rel="stylesheet" type="text/css" href="{% static 'music/css/music_style.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'css/pagination.css' %}">
 {% endblock %}

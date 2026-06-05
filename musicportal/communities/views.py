@@ -1,8 +1,8 @@
 from django.urls import reverse_lazy
 from .forms import AddCommunityForm
 from django.views.generic import ListView
-from django.views.generic.edit import CreateView, UpdateView,DeleteView
-
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from .models import Community
 
 
@@ -30,25 +30,31 @@ class CommunityAll(ListView):
         return context
 
 
-
-class AddCommunity(CreateView):
+class AddCommunity(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     form_class = AddCommunityForm
     template_name = 'generic_form.html'
     success_url = reverse_lazy('all_communities')
-    extra_context = {'title': 'Добавление сообщества','button_text': 'Добавить сообщество'}
+    extra_context = {'title': 'Добавление сообщества', 'button_text': 'Добавить сообщество'}
+    permission_required = 'communities.add_community'
+    raise_exception = True
 
-class UpdateCommunity(UpdateView):
+
+class UpdateCommunity(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Community
     form_class = AddCommunityForm
     template_name = 'generic_form.html'
-    extra_context = {'title': 'Редактировать сообщество',
-                     'button_text': 'Сохранить изменения'}
+    extra_context = {'title': 'Редактировать сообщество', 'button_text': 'Сохранить изменения'}
     success_url = reverse_lazy('all_communities')
+    permission_required = 'communities.change_community'
+    raise_exception = True
 
-class DeleteCommunity(DeleteView):
+
+class DeleteCommunity(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Community
     template_name = 'confirm_delete.html'
     success_url = reverse_lazy('all_communities')
+    permission_required = 'communities.delete_community'
+    raise_exception = True
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -61,8 +67,3 @@ class DeleteCommunity(DeleteView):
         context['object_title'] = self.object.club_name
         context['cancel_url'] = reverse_lazy('all_communities')
         return context
-
-
-
-
-
