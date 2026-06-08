@@ -1,5 +1,4 @@
-<style>
-    .news-container {
+.news-container {
         max-width: 800px;
         margin: 0 auto;
         padding: 20px;
@@ -144,5 +143,3 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0,206,209,0.3);
 }
-
-</style>
