@@ -26,9 +26,22 @@
             {% else %}
                 <div class="avatar-placeholder">👤</div>
             {% endif %}
+             {% if user == request.user %}
+            <br>
+    <div class="avatar-upload">
+        <form method="post" enctype="multipart/form-data" id="avatar-form">
+            {% csrf_token %}
+            <input type="file" name="avatar" id="avatar-input" accept="image/*" style="display: none;">
+            <button type="button" class="change-avatar-btn" onclick="document.getElementById('avatar-input').click();">
+                📷 Сменить аватар
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
         </div>
     </div>
-</div>
+
     <div class="profile-section">
         <h2>Любимые исполнители ({{ favorite_artists_count }})</h2>
         {% if favorite_artists %}
@@ -135,10 +148,10 @@
                     <p><strong>Оценка:</strong> {{ review.rating }}/10</p>
                     <p><strong>Рецензия:</strong> {{ review.text|truncatewords:30|default:"—" }}</p>
                     <div class="review-buttons">
-                        <a href="{% url 'userprofile:edit_review' pk=review.id %}" class="edit-review-btn">
+                        <a href="{% url 'reviews:edit_review' pk=review.id %}" class="edit-review-btn">
                             ✏️ Редактировать
                         </a>
-                        <a href="{% url 'userprofile:delete_review'  pk=review.id %}" class="delete-review-btn" >
+                        <a href="{% url 'reviews:delete_review'  pk=review.id %}" class="delete-review-btn" >
                             🗑️ Удалить
                         </a>
                     </div>
@@ -177,8 +190,6 @@
     </div>
 </div>
 
-
-
-
-<link rel="stylesheet" type="text/css" href="{% static 'users/css/profile_styles.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'userprofile/css/profile_styles.css' %}">
+<script src="{% static 'userprofile/js/change_avatar.js' %}"></script>
 {% endblock %}

@@ -4,8 +4,6 @@ from . import views
 app_name = 'userprofile'
 
 urlpatterns = [ path('profile/', views.ProfileUser.as_view(), name = "profile"),
-     path('review/edit/<int:pk>/', views.UpdateReview.as_view(), name='edit_review'),
-     path('review/delete/<int:pk>/', views.DeleteReview.as_view(), name='delete_review'),
      path('favorite/artist/toggle/<int:pk>/', views.ToggleFavoriteArtistView.as_view(),
           name='toggle_favorite_artist'),
      path('favorite/artists/', views.FavoriteArtistsListView.as_view(), name='favorite_artists'),

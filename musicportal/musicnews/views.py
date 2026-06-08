@@ -54,10 +54,8 @@ class NewsByCategoryView(ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        week_ago = timezone.now() - timedelta(days=7)
         return News.objects.filter(
-            Q(category=self.category_slug) &
-            Q(created_at__gte=week_ago)
+            Q(category=self.category_slug)
         )
 
     def get_context_data(self, **kwargs):

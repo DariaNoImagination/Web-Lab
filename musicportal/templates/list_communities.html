@@ -17,23 +17,20 @@
 
             <p><strong>📅 Основано:</strong> {{ community.founded }}</p>
 
-            <p><strong>👥 Участников:</strong> {{ community.members }}</p>
+            <p class="members-count"><strong>👥 Участников:</strong> {{ community.members }}</p>
 
             <div class="community-footer">
                 {% if user.is_authenticated %}
+                <form method="post" action="{% url 'userprofile:toggle_community' community.id %}" class="community-form">
+                    {% csrf_token %}
                     {% if community in user.joined_communities.all %}
-                        <span class="join-link">
-                            <a href="{% url 'userprofile:toggle_community' community.id %}" class="leave-link">Выйти ←</a>
-                        </span>
+                        <button type="submit" class="edit-community-btn">⭐ В сообществе</button>
                     {% else %}
-                        <span class="join-link">
-                            <a href="{% url 'userprofile:toggle_community' community.id %}" class="join-link">Вступить →</a>
-                        </span>
+                        <button type="submit" class="edit-community-btn">⭐ Вступить</button>
                     {% endif %}
+                </form>
                 {% else %}
-                    <span class="join-link">
-                        <a href="{% url 'users:login' %}">Вступить →</a>
-                    </span>
+                <a href="{% url 'users:login' %}" class="community-btn">⭐ Вступить</a>
                 {% endif %}
             </div>
 
@@ -68,41 +65,4 @@
 {% endif %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'communities/css/fanclub.css' %}">
-
-<script>
-document.querySelectorAll('.join-link a, .leave-link a').forEach(link => {
-    link.addEventListener('click', async (e) => {
-        e.preventDefault();
-
-        const url = link.getAttribute('href');
-        const scrollY = window.scrollY;
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-            const data = await response.json();
-
-            if (data.status === 'added') {
-                link.textContent = 'Выйти ←';
-                link.classList.remove('join-link');
-                link.classList.add('leave-link');
-            } else if (data.status === 'removed') {
-                link.textContent = 'Вступить →';
-                link.classList.remove('leave-link');
-                link.classList.add('join-link');
-            }
-
-
-            window.scrollTo(0, scrollY);
-        } catch (error) {
-            console.error('Error:', error);
-            window.location.href = url;
-        }
-    });
-});
-</script>
+<script src="{% static 'communities/js/add_members.js' %}"></script>

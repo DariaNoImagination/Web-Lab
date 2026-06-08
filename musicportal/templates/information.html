@@ -13,8 +13,8 @@
 
 {% elif 'рецензии' in title|lower or app_name == 'reviews' %}
     <div class="reviews-nav">
-        <a href="{% url 'all_reviews' %}">Все рецензии</a> |
-        <a href="{% url 'genres_for_reviews' %}">Рецензии по жанрам</a>
+        <a href="{% url 'reviews:all_reviews' %}">Все рецензии</a> 
+        <a href="{% url 'reviews:genres_for_reviews' %}">Рецензии по жанрам</a>
     </div>
     {% include 'review_template.html' with reviews=posts %}
 

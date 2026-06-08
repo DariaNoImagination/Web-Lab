@@ -14,7 +14,7 @@ class ProfanityValidator:
 
 class NoSpamValidator:
 
-    def __init__(self, min_words=3):
+    def __init__(self, min_words=2):
         self.min_words = min_words
 
     def __call__(self, value):

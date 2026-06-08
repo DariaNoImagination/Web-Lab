@@ -70,21 +70,49 @@
         </div>
 
         <div class="comments-section">
-            <h4>Комментарии ({{ review.comments.count }})</h4>
-            {% for comment in review.comments.all %}
-            <div class="comment">
+    <h4>Комментарии ({{ review.comments.count }})</h4>
+    {% for comment in review.comments.all %}
+    <div class="comment">
+        <div class="comment-header">
+            <div class="comment-info">
                 <strong>{{ comment.author }}</strong>
                 <small>{{ comment.created_at|date:"d.m.Y H:i" }}</small>
-                <p>{{ comment.text }} </p>
             </div>
-            {% empty %}
-            <p>Нет комментариев</p>
-            {% endfor %}
-            <div class="add-comment-btn">
-                <a href="{% url 'add_comment_url' review.id %}" class="comment-btn">
+        </div>
+
+        <div class="comment-content-wrapper">
+            <p class="comment-text">{{ comment.text }}</p>
+
+            {% if user == comment.author or perms.reviews.can_edit_comment or perms.reviews.can_delete_comment %}
+            <div class="comment-buttons">
+                {% if user == comment.author or perms.reviews.can_edit_comment %}
+                <div class="delete-update-btn">
+                    <a href="{% url 'reviews:edit_comment_url' comment.id %}" class="edit-comment-btn">
+                        ✏️ Редактировать
+                    </a>
+                </div>
+                {% endif %}
+                {% if user == comment.author or perms.reviews.can_delete_comment %}
+                <div class="delete-update-btn">
+                    <a href="{% url 'reviews:delete_comment_url' comment.id %}" class="delete-comment-btn">
+                        🗑️ Удалить
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <p>Нет комментариев</p>
+    {% endfor %}
+
+
+    <div class="add-comment-btn">
+        <a href="{% url 'reviews:add_comment_url' review.id %}" class="comment-btn">
             💬 Добавить комментарий
         </a>
-    </div>
+        </div>
 </form>
     </div>
         </div>
@@ -97,7 +125,7 @@
     <br>
 </div>
 <div class="add-review-btn">
-                <a href="{% url 'add_review'%}" class="add-review-btn">
+                <a href="{% url 'reviews:add_review'%}" class="add-review-btn">
             ➕Добавить рецензию
         </a>
     </div>

@@ -3,11 +3,11 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from .forms import AddCommentForm, AddReviewForm
 from django.views.generic import ListView, TemplateView, FormView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.urls import reverse_lazy
 from .utils import BaseReviewsMixin, CRUDReviewContextMixin
 from django.db.models import Q
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 class ReviewsAll(BaseReviewsMixin, ListView):
     model = Review
@@ -81,7 +81,7 @@ class ReviewsByGenreView(BaseReviewsMixin, ListView):
 class AddComment(LoginRequiredMixin, CRUDReviewContextMixin, FormView):
     form_class = AddCommentForm
     template_name = 'generic_form.html'
-    success_url = reverse_lazy('all_reviews')
+    success_url = reverse_lazy('reviews:all_reviews')
 
     def dispatch(self, request, *args, **kwargs):
         self.review = get_object_or_404(Review, id=kwargs['review_id'])
@@ -108,12 +108,67 @@ class AddComment(LoginRequiredMixin, CRUDReviewContextMixin, FormView):
             'Отправить комментарий'
         )
 
+class UpdateComment(PermissionRequiredMixin,UpdateView):
+    model = Comment
+    fields = ['text', 'is_published']
+    template_name = 'generic_form.html'
+    extra_context = {'title': 'Редактировать комментарий',
+                     'button_text': 'Опубликовать комментарий'}
+
+    def get_permission_required(self):
+        comment = self.get_object()
+        if self.request.user == comment.author:
+            return []
+        return ['reviews.can_edit_any_comment']
+
+    def get_success_url(self):
+        return reverse_lazy('reviews:all_reviews')
+
+    def has_permission(self):
+        comment = self.get_object()
+        if self.request.user == comment.author:
+            return True
+        return super().has_permission()
+
+
+
+class DeleteComment(PermissionRequiredMixin,DeleteView):
+    model = Comment
+    template_name = 'confirm_delete.html'
+
+    def get_success_url(self):
+        return reverse_lazy('reviews:all_reviews')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        response = super().delete(request, *args, **kwargs)
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Удаление комментария'
+        context['object_type'] = 'комментарий'
+
+        context['cancel_url'] = self.get_success_url()
+        return context
+
+    def get_permission_required(self):
+        comment = self.get_object()
+        if self.request.user == comment.author:
+            return []
+        return ['reviews.can_delete_comment']
+
+    def has_permission(self):
+        comment = self.get_object()
+        if self.request.user == comment.author:
+            return True
+        return super().has_permission()
 
 
 class AddReview(LoginRequiredMixin,CRUDReviewContextMixin, CreateView):
     form_class = AddReviewForm
     template_name = 'generic_form.html'
-    success_url = reverse_lazy('all_reviews')
+    success_url = reverse_lazy('reviews:all_reviews')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -129,3 +184,43 @@ class AddReview(LoginRequiredMixin,CRUDReviewContextMixin, CreateView):
         review.date = timezone.now().strftime('%Y-%m-%d')
         review.save()
         return super().form_valid(form)
+
+
+class UpdateReview(UpdateView):
+    model = Review
+    fields = ['song', 'album', 'rating', 'text', 'is_published']
+    template_name = 'generic_form.html'
+    extra_context = {'title': 'Редактировать рецензию',
+                     'button_text': 'Опубликовать рецензию'}
+
+    def get_success_url(self):
+        return reverse_lazy('userprofile:profile')
+
+
+
+class DeleteReview(DeleteView):
+    model = Review
+    template_name = 'confirm_delete.html'
+
+    def get_success_url(self):
+        return reverse_lazy('userprofile:profile')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        response = super().delete(request, *args, **kwargs)
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Удаление рецензии'
+        context['object_type'] = 'рецензию'
+
+        if self.object.song:
+            context['object_title'] = self.object.song.title
+        elif self.object.album:
+            context['object_title'] = self.object.album.title
+        else:
+            context['object_title'] = 'рецензию'
+
+        context['cancel_url'] = self.get_success_url()
+        return context

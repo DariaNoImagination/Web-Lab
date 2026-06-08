@@ -13,6 +13,7 @@ from django.views.generic.edit import UpdateView, DeleteView
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 
+
 class ProfileUser(LoginRequiredMixin, UpdateView):
     model = get_user_model()
     form_class = ProfileUserForm
@@ -79,49 +80,21 @@ class ProfileUser(LoginRequiredMixin, UpdateView):
 
         return context
 
-
-class UpdateReview(UpdateView):
-    model = Review
-    fields = ['song', 'album', 'rating', 'text', 'is_published']
-    template_name = 'generic_form.html'
-    extra_context = {'title': 'Редактировать рецензию',
-                     'button_text': 'Опубликовать рецензию'}
-
-    def get_success_url(self):
-        return reverse_lazy('userprofile:profile')
-
+    def post(self, request, *args, **kwargs):
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' and request.FILES.get('avatar'):
+            user = self.get_object()
+            user.avatar = request.FILES['avatar']
+            user.save()
+            return JsonResponse({
+                'success': True,
+                'avatar_url': user.avatar.url
+            })
 
 
-class DeleteReview(DeleteView):
-    model = Review
-    template_name = 'confirm_delete.html'
-
-    def get_success_url(self):
-        return reverse_lazy('userprofile:profile')  # Исправлено
-
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        response = super().delete(request, *args, **kwargs)
-        return response
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Удаление рецензии'
-        context['object_type'] = 'рецензию'
-
-        if self.object.song:
-            context['object_title'] = self.object.song.title
-        elif self.object.album:
-            context['object_title'] = self.object.album.title
-        else:
-            context['object_title'] = 'рецензию'
-
-        context['cancel_url'] = self.get_success_url()
-        return context
+        return super().post(request, *args, **kwargs)
 
 
 class BaseToggleFavoriteView(LoginRequiredMixin, View):
-    """Базовый класс для переключения избранного"""
     model = None
     favorite_field = None
     success_url_name = None
@@ -240,6 +213,23 @@ class ToggleCommunityView(BaseToggleFavoriteView):
 
     def is_favorite(self, user, obj):
         return getattr(user, self.favorite_field).filter(id=obj.id).exists()
+
+    def post(self, request, *args, **kwargs):
+        obj_id = kwargs.get('pk')
+        obj = self.get_object(obj_id)
+
+        if self.is_favorite(request.user, obj):
+            self.remove_favorite(request.user, obj)
+            status = 'removed'
+        else:
+            self.add_favorite(request.user, obj)
+            status = 'added'
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'status': status,
+                'members_count': obj.members,
+            })
 
 
 class JoinedCommunitiesListView(LoginRequiredMixin, ListView):

@@ -127,9 +127,9 @@
     background: #48D1CC;
         color: white;
         border: none;
-        padding: 5px 10px;
+        padding: 5px 15px;
         font-size: 14px;
-        font-weight: 400;
+        font-weight: 600;
         border-radius: 20px;
         cursor: pointer;
         transition: all 0.2s;
@@ -150,16 +150,15 @@
    background: #48D1CC;
         color: white;
         border: none;
-        padding: 5px 10px;
+        padding: 5px 15px;
         font-size: 14px;
-        font-weight: 400;
+        font-weight: 600;
         border-radius: 20px;
         cursor: pointer;
         transition: all 0.2s;
         display: inline-block;
         align-items: center;
         gap: 5px;
-
 
 }
   .delete-community-btn:hover {

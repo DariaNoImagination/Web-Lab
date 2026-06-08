@@ -43,7 +43,7 @@
 
     {% if perms.musicnews.delete_news %}
     <div class="edit-btn">
-        <a href="{% url 'delete_news' item.id %}" class="edit-btn" onclick="return confirm('Вы уверены?')">
+        <a href="{% url 'delete_news' item.id %}" class="edit-btn">
             🗑️ Удалить
         </a>
     </div>

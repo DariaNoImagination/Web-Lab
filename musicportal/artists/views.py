@@ -1,7 +1,7 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from artists.models import Artist, Genre
 from django.db.models import F, Q, Value
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.db.models.functions import Coalesce
 from .forms import AddArtistForm
 from django.views.generic import ListView, TemplateView, DetailView
@@ -74,6 +74,7 @@ class ArtistsByGenre(CareerLengthMixin, ArtistListContextMixin, GenreMixin, List
             title = f'Исполнители жанра {self.genre.title}'
         else:
             title = f'В жанре {self.genre.title} пока нет исполнителей'
+        context['selected_genre'] = self.genre.slug
 
         return self.get_artist_list_context(context, title)
 
@@ -113,8 +114,11 @@ class TagArtistListView(CareerLengthMixin, ArtistListContextMixin, TagMixin, Lis
 
         artists_count = self.get_queryset().count()
         title = f'{self.tag.tag} ({artists_count} {get_artists_word(artists_count)})'
+        context['selected_tag'] = self.tag.slug
 
         return self.get_artist_list_context(context, title)
+
+
 
 
 class ArtistsByYearsFilterView(View):
@@ -122,7 +126,8 @@ class ArtistsByYearsFilterView(View):
         start_year = request.GET.get('start_year')
         end_year = request.GET.get('end_year')
         to_present = request.GET.get('to_present') == 'true'
-
+        genre_slug = request.GET.get('genre_slug')
+        tag_slug = request.GET.get('tag_slug')
         if not start_year:
             return redirect('all_artists')
 
@@ -156,7 +161,17 @@ class ArtistsByYearsFilterView(View):
                 'display': f'{start_year}-{end_year}'
             }
 
-        return redirect('year_artist', years=years_dict)
+        url = reverse('year_artist', kwargs={'years': years_dict})
+        params = []
+        if genre_slug:
+            params.append(f'genre={genre_slug}')
+        if tag_slug:
+            params.append(f'tag={tag_slug}')
+
+        if params:
+            url += '?' + '&'.join(params)
+
+        return redirect(url)
 
 
 class ArtistsByYears(TemplateView):
@@ -169,6 +184,8 @@ class ArtistsByYears(TemplateView):
         self.is_present = self.years['is_present']
         self.display = self.years['display']
         self.page_number = request.GET.get('page', 1)
+        self.genre_slug = request.GET.get('genre')
+        self.tag_slug = request.GET.get('tag')
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -177,19 +194,63 @@ class ArtistsByYears(TemplateView):
 
         artists = Artist.objects.filter(active_from__isnull=False)
 
+        genre_title = None
+        tag_title = None
+
+        if self.genre_slug:
+            from artists.models import Genre
+            genre = get_object_or_404(Genre, slug=self.genre_slug)
+            genre_title = genre.title
+            artists = artists.filter(genre__slug=self.genre_slug)
+            context['selected_genre'] = self.genre_slug
+
+        if self.tag_slug:
+            from artists.models import TagPost
+            tag = get_object_or_404(TagPost, slug=self.tag_slug)
+            tag_title = tag.tag
+            artists = artists.filter(tags__slug=self.tag_slug)
+            context['selected_tag'] = self.tag_slug
+
         if self.is_present:
             artists = artists.filter(
                 Q(active_from=self.start) & Q(active_to__isnull=True)
             )
-            title = f"Исполнители, активные с {self.start} года по настоящее время"
+
+
+            if genre_title and tag_title:
+                title = f"{tag_title} жанра {genre_title}, активные с {self.start} года по настоящее время"
+            elif genre_title:
+                title = f"Исполнители жанра {genre_title}, активные с {self.start} года по настоящее время"
+            elif tag_title:
+                title = f"{tag_title}, активные с {self.start} года по настоящее время"
+            else:
+                title = f"Исполнители, активные с {self.start} года по настоящее время"
+
         else:
             artists = artists.filter(
                 Q(active_from=self.start) & Q(active_to=self.end)
             )
-            if self.start == self.end:
-                title = f"Исполнители, активные в {self.start} году"
+
+            if genre_title and tag_title:
+                if self.start == self.end:
+                    title = f" {tag_title} жанра {genre_title} , активные в {self.start} году"
+                else:
+                    title = f"{tag_title} жанра {genre_title}  активные в период {self.start}-{self.end} годов"
+            elif genre_title:
+                if self.start == self.end:
+                    title = f"Исполнители жанра {genre_title}, активные в {self.start} году"
+                else:
+                    title = f"Исполнители жанра {genre_title}, активные в период {self.start}-{self.end} годов"
+            elif tag_title:
+                if self.start == self.end:
+                    title = f"{tag_title}, активные в {self.start} году"
+                else:
+                    title = f"{tag_title}, активные в период {self.start}-{self.end} годов"
             else:
-                title = f"Исполнители, активные в период {self.start}-{self.end} годов"
+                if self.start == self.end:
+                    title = f"Исполнители, активные в {self.start} году"
+                else:
+                    title = f"Исполнители, активные в период {self.start}-{self.end} годов"
 
         artists_data = artists.annotate(
             career_length=Coalesce(F('active_to'), Value(current_year)) - F('active_from')
@@ -203,6 +264,7 @@ class ArtistsByYears(TemplateView):
             artist.display_years = f"{artist.active_from} - {'настоящее время' if artist.is_active else artist.active_to}"
             artist.genre_title = artist.genre.title if artist.genre else "Не указан"
 
+        context['app_name'] = 'artists'
         context['title'] = title
         context['posts'] = page_obj
         context['start'] = self.start
@@ -226,7 +288,7 @@ class AddArtist(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     success_url = reverse_lazy('all_artists')
     extra_context = {'title': 'Добавление исполнителя', 'button_text': 'Добавить исполнителя'}
     permission_required = 'artists.add_artist'
-    raise_exception = True  # Возвращать 403 вместо редиректа на логин
+    raise_exception = True
 
 
 class UpdateArtist(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
